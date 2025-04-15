@@ -1,0 +1,50 @@
+XPROTECT(1)                 General Commands Manual                XPROTECT(1)
+
+NAME
+     xprotect – Utility for interacting with XProtect
+
+SYNOPSIS
+     xprotect <subcommand>
+
+
+
+DESCRIPTION
+     xprotect is used to interact with XProtect. It is useful for
+     administrators or users who want to manually invoke XProtect
+     functionality.
+
+
+     xprotect requires exactly one subcommand option to determine what action
+     is to be performed.
+
+
+SUBCOMMANDS
+     The subcommands are as follows:
+
+     update [--prerelease]
+             Performs an update of XProtect assets. Using --prerelease will
+             attempt to use a prerelease update, if available.
+
+
+     check [--json]
+             Prints the currently online available update version in iCloud.
+
+
+     version [--json]
+             Prints the version of the currently installed XProtect assets.
+
+
+     logs    Display XProtect logs.
+
+
+     status [--json]
+             Prints the current status of XProtect.
+
+
+     help    Print help for the particular subcommand.
+
+
+SEE ALSO
+     syspolicyd(8), spctl(8), syspolicy_check(1)
+
+macOS 15.4                    January 11th, 2024                    macOS 15.4

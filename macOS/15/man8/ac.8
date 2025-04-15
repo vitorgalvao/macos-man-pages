@@ -1,0 +1,55 @@
+AC(8)                       System Manager's Manual                      AC(8)
+
+NAME
+     ac – connect time accounting
+
+SYNOPSIS
+     ac [-dp] [-t tty] [-w wtmp] [users ...]
+
+DESCRIPTION
+     By default, a record of individual login and logout times are recorded by
+     login(1) and init(8), respectively to syslogd(8).  The ac utility
+     examines these records and writes the accumulated connect time (in hours)
+     for all logins to the standard output.
+
+     The options are as follows:
+
+     -d         Display the connect times in 24 hour chunks.
+
+     -p         Print individual users' totals.
+
+     -t tty     Only do accounting logins on certain ttys.  The tty
+                specification can start with '!' to indicate not this tty and
+                end with '*' to indicate all similarly named ttys.  Multiple
+                -t flags may be specified.
+
+     -w wtmp    Read connect time data from wtmp instead of the default,
+                reading from the log(1).
+
+     users ...  Display totals for the given individuals only.
+
+     If no arguments are given, ac displays the total connect time for all
+     accounts with login sessions recorded in log(1).
+
+FILES
+     /var/run/utmpx    connect time accounting file
+
+EXIT STATUS
+     The ac utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     Allow times recorded in modems to be charged out at a different rate than
+     other:
+
+           ac -p -t "ttyd*" > modems
+           ac -p -t "!ttyd*" > other
+
+SEE ALSO
+     log(1), login(1), getutxent(3), utmpx(5), launchd(8), sa(8), syslogd(8)
+
+HISTORY
+     An ac command appeared in Version 5 AT&T UNIX.  This version of ac was
+     written for NetBSD 0.9A from the specification provided by various
+     systems' manual pages.
+
+macOS 15.4                     February 14, 2020                    macOS 15.4

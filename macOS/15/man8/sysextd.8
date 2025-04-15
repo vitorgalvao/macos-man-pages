@@ -1,0 +1,26 @@
+SYSEXTD(8)                  System Manager's Manual                 SYSEXTD(8)
+
+NAME
+     sysextd – system extension manager
+
+DESCRIPTION
+     sysextd is a daemon that helps manage system extensions.  It works in
+     coordination with other daemons, with system extensions' host
+     applications, and with the system extensions themselves.  Users should
+     not manually run sysextd; the daemon is automatically started when its
+     services are needed.
+
+FILES
+     /Library/SystemExtensions
+             System extensions and data managed by the daemon.
+
+EXIT STATUS
+     The sysextd utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     systemextensionsctl(8)
+
+HISTORY
+     sysextd was introduced in macOS Catalina 10.15.
+
+Darwin                         October 30, 2023                         Darwin

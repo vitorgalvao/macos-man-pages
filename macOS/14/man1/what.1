@@ -1,0 +1,39 @@
+WHAT(1)                     General Commands Manual                    WHAT(1)
+
+NAME
+     what – show what versions of object modules were used to construct a file
+
+SYNOPSIS
+     what [-qs] [file ...]
+
+DESCRIPTION
+     The what utility searches each specified file for sequences of the form
+     “@(#)” as inserted by the SCCS source code control system.  It prints the
+     remainder of the string following this marker, up to a NUL character,
+     newline, double quote, ‘>’ character, or backslash.
+
+     The following options are available:
+
+     -q      Only output the match text, rather than formatting it.
+
+     -s      Stop searching each file after the first match.
+
+EXIT STATUS
+     Exit status is 0 if any matches were found, otherwise 1.
+
+SEE ALSO
+     ident(1), strings(1)
+
+STANDARDS
+     The what utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).  The -q
+     option is a non-standard FreeBSD extension which may not be available on
+     other operating systems.
+
+HISTORY
+     The what command appeared in 4.0BSD.
+
+BUGS
+     This is a rewrite of the SCCS command of the same name, and behavior may
+     not be identical.
+
+macOS 14.7                     December 14, 2006                    macOS 14.7

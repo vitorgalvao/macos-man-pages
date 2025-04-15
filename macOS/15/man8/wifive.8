@@ -1,0 +1,103 @@
+wifive(8)                   System Manager's Manual                  wifive(8)
+
+NAME
+     wifive – Wi-Fi performance and diagnostics utility.
+
+SYNOPSIS
+     wifive status
+     wifive diagnostics [--printTestIDs] [--timeout ⟨timeout⟩] [-t ⟨testID⟩]
+     wifive debug [--wifi ⟨0,1⟩] [--bluetooth ⟨0,1⟩] [--eapol ⟨0,1⟩]
+            [--dns ⟨0,1⟩]
+     wifive logs [--printLogIDs] [--reason ⟨reason⟩] [--timeout ⟨timeout⟩]
+            [-o ⟨outputDirectory⟩] [-z] [-l ⟨logID⟩]
+     wifive sniff [--channel ⟨channel⟩] --duration ⟨duration⟩
+            [-o ⟨outputDirectory⟩]
+     wifive events
+     wifive wifiperf [--p2p] [--artrace] [--cc ⟨milliseconds⟩]
+            [--powermetrics ⟨milliseconds⟩] [--wifistats ⟨seconds⟩]
+
+DESCRIPTION
+     wifive is a tool for (1) performing connectivity, configuration, and
+     environment diagnostics tests, (2) querying connection status, (3)
+     configuring various networking-related logging facilities, (4) capturing
+     Wi-Fi traffic, and (5) collecting logs for debugging Wi-Fi-related
+     problems.
+
+COMMANDS
+     status
+
+           Displays the current status for Wi-Fi and related components.
+
+     diagnostics [--printTestIDs] [--timeout ⟨timeout⟩] [-t ⟨testID⟩]
+
+           Runs diagnostics tests and displays the results.
+
+     debug [--wifi ⟨0,1⟩] [--bluetooth ⟨0,1⟩] [--eapol ⟨0,1⟩] [--dns ⟨0,1⟩]
+
+           Enables/disables debug logging for the specified components, or
+           displays the current log configuration if no arguments are
+           specified.
+
+     logs [--printLogIDs] [--reason ⟨reason⟩] [--timeout ⟨timeout⟩] [-o
+     ⟨outputDirectory⟩] [-z] [-l ⟨logID⟩]
+
+           Collects logs and displays the output file path when completed.
+           Specify -z to create a compressed archive.
+
+           By default, on OS X devices the output directory is ~/Desktop and
+           on iOS devices the output directory is /Library/Logs/CrashReporter.
+
+     sniff [--channel ⟨channel⟩] --duration ⟨duration⟩ [-o ⟨outputDirectory⟩]
+
+           Starts sniffing Wi-Fi traffic on the specified channel and displays
+           the output file path when completed.
+
+           By default, on OS X devices the output directory is ~/Desktop and
+           on iOS devices the output directory is /Library/Logs/CrashReporter.
+
+     events
+
+           Starts event monitoring and displays the events as they are
+           received.
+
+           This command will block indefinitely, ue Ctl-C to stop monitoring
+           events.
+
+     wifiperf [--p2p] [--artrace] [--cc ⟨milliseconds⟩] [--powermetrics
+     ⟨milliseconds⟩] [--wifistats ⟨seconds⟩]
+
+           Starts Wi-Fi performance logging and displays the temporary output
+           directory used for the current session.
+
+           This command will block indefinitely, ue Ctl-C to stop the Wi-Fi
+           performance monitoring session.
+
+EXAMPLES
+     Run default set of diagnostic tests:
+
+           sudo wifive diagnostics
+
+     Query debug log configuration:
+
+           sudo wifive debug
+
+     Enable Wi-Fi and EAPOL logging, and disable DNS logging:
+
+           sudo wifive debug --eapol 1 --wifi 1 --dns 0
+
+     Query status information:
+
+           sudo wifive status
+
+     Sniff Wi-Fi traffic on channel 36 for 20 seconds:
+
+           sudo wifive sniff --channel 36 --duration 20
+
+AUTHOR
+     This program and document are maintained by Apple Inc. <wifiperf-
+     help@group.apple.com>
+
+HISTORY
+     wifive first appeared in Mac OS X 10.12 and iOS 10.
+
+macOS 15.4                          4/2/15                          macOS 15.4

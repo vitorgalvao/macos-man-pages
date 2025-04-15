@@ -1,0 +1,27 @@
+NOLOGIN(8)                  System Manager's Manual                 NOLOGIN(8)
+
+NAME
+     nologin – politely refuse a login
+
+SYNOPSIS
+     nologin
+
+DESCRIPTION
+     The nologin is intended as a replacement shell field for accounts that
+     have been disabled.
+
+     When executed, nologin first writes about the login attempt to syslog(3)
+     and then displays a message that an account is not available.
+
+     To disable all logins, investigate nologin(5).
+
+EXIT STATUS
+     The nologin utility always exits non-zero.
+
+SEE ALSO
+     login(1), nologin(5)
+
+HISTORY
+     The nologin utility appeared in 4.4BSD.
+
+macOS 14.7                      April 15, 2020                      macOS 14.7

@@ -1,0 +1,55 @@
+CHROOT(8)                   System Manager's Manual                  CHROOT(8)
+
+NAME
+     chroot – change root directory
+
+SYNOPSIS
+     chroot [-G group[,group ...]] [-g group] [-u user] newroot
+            [command [arg ...]]
+
+DESCRIPTION
+     The chroot utility changes its current and root directories to the
+     supplied directory newroot and then exec's command with provided
+     arguments, if supplied, or an interactive copy of the user's login shell.
+
+     The options are as follows:
+
+     -G group[,group ...]  Run the command with the permissions of the
+                           specified groups.
+
+     -g group              Run the command with the permissions of the
+                           specified group.
+
+     -u user               Run the command as the user.
+
+ENVIRONMENT
+     The following environment variable is referenced by chroot:
+
+     SHELL  If set, the string specified by SHELL is interpreted as the name
+            of the shell to exec.  If the variable SHELL is not set, /bin/sh
+            is used.
+
+EXAMPLES
+     Example 1: Chrooting into a New Root Directory
+
+       The following command opens the csh(1) shell after chrooting to the
+       standard root directory.
+
+         # chroot / /bin/csh
+
+     Example 2: Execution of a Command with a Changed Root Directory
+
+       The following command changes a root directory with chroot and then
+       runs ls(1) to list the contents of /sbin.
+
+         # chroot /tmp/testroot ls /sbin
+
+SEE ALSO
+     chdir(2), chroot(2), setgid(2), setgroups(2), setuid(2), getgrnam(3),
+     environ(7)
+
+HISTORY
+     The chroot utility first appeared in AT&T System III UNIX and
+     4.3BSD-Reno.
+
+macOS 15.4                       July 20, 2021                      macOS 15.4

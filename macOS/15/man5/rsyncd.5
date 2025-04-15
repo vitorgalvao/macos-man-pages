@@ -1,0 +1,74 @@
+RSYNCD(5)                     File Formats Manual                    RSYNCD(5)
+
+NAME
+     rsyncd – rsyncd wire protocol
+
+DESCRIPTION
+     The rsyncd protocol described in this relates to the BSD-licensed
+     openrsync(1), a re-implementation of the GPL-licensed reference utility
+     rsync(1).  It is compatible with version 27 of the reference.
+
+     The rsyncd protocol is an envelope protocol for rsync(5) between a client
+     and an rsync://-capable server.  It provides a means to exchange
+     capabilities information prior to file transfer.
+
+     In this document, "client" refers to the openrsync(1) utility making the
+     request.  It follows that "server" refers to the daemon servicing the
+     request.
+
+     A connection between a client and server consists of host, a module, and
+     zero or more paths.
+
+           openrsync rsync://host/module/path1 rsync://host/path2... dest
+
+     At this time, operating in sender mode (with the rsync:// host receiving
+     information) is not described in this document.
+
+   Data types
+     These are the same as in rsync(5).  A newline is always a standalone \n.
+
+   Client process
+     After initialising a connection, the client and server exchange the
+     following information, in order.  This portion of the process is not
+     multiplexed.
+
+     1.   client sends requested module followed by newline
+     2.   server responds with preamble followed by standalone newline
+
+     The requested module must have non-zero length.  The preamble consists in
+     a sequence of lines.  Each line either contains free-form text sent by
+     the server as a "motd" (message of the day) or a command:
+
+           @RSYNCD: command\n
+
+     The only supported command is the server protocol specification:
+
+           @RSYNCD: xx[.yy]\n
+
+     The optional component is the submodule, which may be discarded.  The
+     version may only be specified once.  Both the motd and commands end in
+     the special termination command:
+
+           @RSYNCD: OK\n
+
+     Following that, the client must send the command-line arguments that
+     would otherwise be used to start a openrsync(1) server.  Each argument
+     must be specified on its own line, e.g.,
+
+           --server\n--sender\n-r\n-t\n.\npath1\npath2
+
+     This must be followed by a standalone newline.
+
+     If the server does not understand or accept any of the command-line
+     arguments, it will exit at this point.
+
+     Following this, the client must read the integer-length session checksum
+     seed.  Multiplexing is subsequently enabled.
+
+     The sequence that follows is stipulated in rsync(5) following the
+     handshake.
+
+SEE ALSO
+     openrsync(1), rsync(5)
+
+macOS 15.4                      April 15, 2025                      macOS 15.4

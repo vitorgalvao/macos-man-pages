@@ -1,0 +1,80 @@
+MAN.CONF(5)                   File Formats Manual                  MAN.CONF(5)
+
+NAME
+     man.conf – man(1) and manpath(1) configuration files
+
+DESCRIPTION
+     The man.conf file is used to configure the manual search path, locales,
+     and utility set for man(1) and its related utilities.  During
+     initialization, man(1) reads the configuration files located at
+     /usr/local/etc/man.d/*.conf and /etc/man.conf.
+
+     The files contained in /usr/local/etc/man.d/*.conf are intended to be
+     used by the ports(7) system for extending the manual set to support
+     additional paths and locales.  /etc/man.conf is intended to be used by
+     the local administrator to set additional policy.
+
+     Currently supported configuration variables include:
+
+           MANCONFIG     Overrides the default location to import additional
+                         manual configuration files.  Defaults to
+                         /usr/local/etc/man.d/*.conf.
+
+           MANPATH       Adds the specified directory to the manual search
+                         path.
+
+           MANLOCALE     Indicates support is available for the given locale.
+
+     For pages in a given language, overriding the default toolset for display
+     is supported via the following definitions:
+
+           EQN_LANG
+           NROFF_LANG
+           PIC_LANG
+           TBL_LANG
+           TROFF_LANG
+           REFER_LANG
+           VGRIND_LANG
+
+     See the EXAMPLES section for how to use these variables.
+
+IMPLEMENTATION NOTES
+     The parser used for this utility is very basic and only supports comment
+     characters (#) at the beginning of a line.
+
+FILES
+     /etc/man.conf                   System configuration file.
+     /usr/local/etc/man.d/*.conf     Local configuration files.
+
+EXAMPLES
+     A perl port that needs to install additional manual pages outside of the
+     default location could install a file in /usr/local/etc/man.d/perl.conf
+     with the following contents:
+
+           # Add perl man pages to search path
+           MANPATH /usr/local/lib/perl5/5.8.9/man
+           MANPATH /usr/local/lib/perl5/5.8.9/perl/man
+
+     A Japanese localization port could install a custom toolset and include a
+     file in /usr/local/etc/man.d/ja-man-doc.conf with the following contents:
+
+           # Setup Japanese toolset
+           MANLOCALE       ja_JP.eucJP
+           EQN_JA          /usr/local/bin/geqn
+           PIC_JA          /usr/local/bin/gpic
+           TBL_JA          /usr/local/bin/gtbl
+           NROFF_JA        /usr/local/bin/groff -man -dlang=ja_JP.eucJP
+           TROFF_JA        /usr/local/bin/groff -man -dlang=ja_JP.euc.jp
+
+     If the system administrator decides to override the LOCALBASE make(1)
+     variable causing all ports(7) to be installed into /opt instead of
+     /usr/local, specifying the following in /etc/man.conf will accommodate
+     this change:
+
+           # Look for additional configuration files
+           MANCONFIG /opt/etc/man.d/*.conf
+
+SEE ALSO
+     apropos(1), man(1), manpath(1), whatis(1)
+
+macOS 15.4                       June 3, 2011                       macOS 15.4

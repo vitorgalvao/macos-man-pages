@@ -1,0 +1,57 @@
+COLRM(1)                    General Commands Manual                   COLRM(1)
+
+NAME
+     colrm – remove columns from a file
+
+SYNOPSIS
+     colrm [start [stop]]
+
+DESCRIPTION
+     The colrm utility removes selected columns from the lines of a file.  A
+     column is defined as a single character in a line.  Input is read from
+     the standard input.  Output is written to the standard output.
+
+     If only the start column is specified, columns numbered less than the
+     start column will be written.  If both start and stop columns are
+     specified, columns numbered less than the start column or greater than
+     the stop column will be written.  Column numbering starts with one, not
+     zero.
+
+     Tab characters increment the column count to the next multiple of eight.
+     Backspace characters decrement the column count by one.
+
+ENVIRONMENT
+     The LANG, LC_ALL and LC_CTYPE environment variables affect the execution
+     of colrm as described in environ(7).
+
+EXIT STATUS
+     The colrm utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     Show columns below 3 (c) and above 5 (e):
+
+           $ echo -e "abcdefgh\n12345678" | colrm 3 5
+           abfgh
+           12678
+
+     Specifying a start column bigger than the number of columns in the file
+     is allowed and shows all the columns:
+
+           $ echo "abcdefgh" | colrm 100
+           abcdefgh
+
+     Using 1 as start column will show nothing:
+
+           $ echo "abcdefgh" | colrm 1
+
+
+SEE ALSO
+     awk(1), column(1), cut(1), paste(1)
+
+HISTORY
+     The colrm utility first appeared in 1BSD.
+
+AUTHORS
+     Jeff Schriebman wrote the original version of colrm in November 1974.
+
+macOS 13.7                       June 23, 2020                      macOS 13.7

@@ -1,0 +1,22 @@
+DOUBLEAGENTD(8)             System Manager's Manual            DOUBLEAGENTD(8)
+
+NAME
+     doubleagentd – A daemon for parsing AppleDouble files in userspace
+
+SYNOPSIS
+     doubleagentd takes no arguments, and users should not launch it manually.
+
+DESCRIPTION
+     doubleagentd receives requests from the kernel to parse AppleDouble files
+     (and modify them, if needed).  AppleDouble files are used by file systems
+     which do not natively support extended attributes, such as the MS-DOS and
+     ExFAT file systems.
+
+     doubleagentd is launched automatically by launchd(8) when the kernel
+     needs to access an AppleDouble file that contains extended attributes for
+     a base file.
+
+FILES
+     /System/Library/LaunchDaemons/com.apple.doubleagentd.plist
+
+macOS 15.4                    September 24, 2024                    macOS 15.4

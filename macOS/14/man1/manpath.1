@@ -1,0 +1,57 @@
+MANPATH(1)                  General Commands Manual                 MANPATH(1)
+
+NAME
+     manpath – display search path for manual pages
+
+SYNOPSIS
+     manpath [-Ldq]
+
+DESCRIPTION
+     The manpath utility determines the user's manual search path from the
+     user's PATH, and local configuration files.  This result is echoed to the
+     standard output.
+
+     -L     Output manual locales list instead of the manual path.
+
+     -d     Print extra debugging information.
+
+     -q     Suppresses warning messages.
+
+IMPLEMENTATION NOTES
+     The manpath utility constructs the manual path from two sources:
+     1.   From each component of the user's PATH for the first of:
+          -   pathname/man
+          -   pathname/MAN
+          -   If pathname ends with /bin: pathname/../share/man and
+              pathname/../man
+     2.   The configuration files listed in the FILES section for MANPATH
+          entries.
+     The information from these locations is then concatenated together.
+
+     If the -L flag is set, the manpath utility will search the configuration
+     files listed in the FILES section for MANLOCALE entries.
+
+ENVIRONMENT
+     The following environment variables affect the execution of manpath:
+
+     MANLOCALES      If set with the -L flag, causes the utility to display a
+                     warning and the value, overriding any other configuration
+                     found on the system.
+
+     MANPATH         If set, causes the utility to display a warning and the
+                     value, overriding any other configuration found on the
+                     system.
+
+     PATH            Influences the manual path as described in the
+                     IMPLEMENTATION NOTES.
+
+FILES
+     /etc/man.conf
+             System configuration file.
+     /usr/local/etc/man.d/*.conf
+             Local configuration files.
+
+SEE ALSO
+     apropos(1), man(1), whatis(1), man.conf(5)
+
+macOS 14.7                      March 11, 2017                      macOS 14.7

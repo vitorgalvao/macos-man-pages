@@ -1,0 +1,61 @@
+SYSTEMEXTENSIONSCTl(8)      System Manager's Manual     SYSTEMEXTENSIONSCTl(8)
+
+NAME
+     systemextensionsctl – examine and manage system extensions
+
+SYNOPSIS
+     systemextensionsctl developer [on | off]
+     systemextensionsctl list
+     systemextensionsctl reset
+
+DESCRIPTION
+     The systemextensionsctl program examines and manages system extensions.
+
+     Users should not run systemextensionsctl under most circumstances; this
+     utility is intended for software developers.
+
+     Its subcommands are:
+
+     developer [on | off]
+             Turn developer mode on and off.
+
+             When the computer examines a new system extension, it performs a
+             version check to see if it is the same as a system extension that
+             is already installed.  When developer mode is on, this version
+             check is skipped.
+
+     list    List the system extensions and their state.  States include:
+
+             activated enabled
+                     Available for use
+
+             activated waiting for user
+                     Waiting for user approval via System Settings
+
+             activated disabled
+                     Available but currently disabled by the user, can be
+                     enabled using System Settings
+
+             terminated waiting for uninstall on reboot
+                     Will be removed at the next computer restart
+
+     reset   Forcibly reset system extensions.  This removes all system
+             extensions and clears related state.
+
+EXIT STATUS
+     The systemextensionsctl utility exits 0 on success, and >0 if an error
+     occurs.
+
+SEE ALSO
+     sysextd(8)
+
+     •   System Extensions and DriverKit:
+         https://developer.apple.com/system-extensions/
+
+     •   System Extensions Framework:
+         https://developer.apple.com/documentation/systemextensions/
+
+HISTORY
+     systemextensionsctl was introduced in macOS Catalina 10.15.
+
+Darwin                         October 30, 2023                         Darwin

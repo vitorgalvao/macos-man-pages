@@ -1,0 +1,43 @@
+avbcapture(1)               General Commands Manual              avbcapture(1)
+
+NAME
+     avbcapture – Audio Video Bridging traffic capture tool.
+
+SYNOPSIS
+     avbcapture command <arguments>
+
+DESCRIPTION
+     The avbcapture executable is used for capture a PCAPNG file containing
+     gPTP and AVTP stream packets.
+
+
+     The following options are available for the pcap command:
+
+     --interface bsd-name
+         The interface to capture traffic on. This option may be provided
+         multiple times to capture simultaneously from multiple interfaces to
+         the one file.
+
+     --output path
+         Specifies the path to the PCAPNG file to put all the captured
+         traffic.
+
+     --ring
+         Use a ring of packets and only output to file when the capture is
+         stopped.
+
+     --length num-packets
+         The number of packets to keep in the ring. Defaults to 2,561,000 if
+         not specified.
+
+     --allow-tap
+         Allow the tool to tap the receive queue rather than adding a stream
+         capture allowing capture on a live system. This could potentially
+         cause performance issues resulting in packets being lost.
+
+     --force-tap
+         Force using the receive queue rather than adding a stream capture
+         allowing capture on a live system. This could potentially cause
+         performance issues resulting in packets being lost.
+
+Darwin                              1/5/24                              Darwin

@@ -1,0 +1,127 @@
+SDIFF(1)                    General Commands Manual                   SDIFF(1)
+
+NAME
+     sdiff – side-by-side diff
+
+SYNOPSIS
+     sdiff [-abdilstHW] [-I regexp] [-o outfile] [-w width] file1 file2
+
+DESCRIPTION
+     sdiff displays two files side by side, with any differences between the
+     two highlighted as follows: new lines are marked with ‘>’; deleted lines
+     are marked with ‘<’; and changed lines are marked with ‘|’.
+
+     sdiff can also be used to interactively merge two files, prompting at
+     each set of differences.  See the -o option for an explanation.
+
+     The options are:
+
+     -l --left-column
+             Only print the left column for identical lines.
+
+     -o --output outfile
+             Interactively merge file1 and file2 into outfile.  In this mode,
+             the user is prompted for each set of differences.  See EDITOR and
+             VISUAL, below, for details of which editor, if any, is invoked.
+
+             The commands are as follows:
+
+             l | 1   Choose left set of diffs.
+
+             r | 2   Choose right set of diffs.
+
+             s       Silent mode – identical lines are not printed.
+
+             v       Verbose mode – identical lines are printed.
+
+             e       Start editing an empty file, which will be merged into
+                     outfile upon exiting the editor.
+
+             e l     Start editing file with left set of diffs.
+
+             e r     Start editing file with right set of diffs.
+
+             e b     Start editing file with both sets of diffs.
+
+             q       Quit sdiff.
+
+     -s --suppress-common-lines
+             Skip identical lines.
+
+     -w --width width
+             Print a maximum of width characters on each line.  The default is
+             130 characters.
+
+     Options passed to diff(1) are:
+
+     -a --text
+             Treat file1 and file2 as text files.
+
+     -b --ignore-space-change
+             Ignore trailing blank spaces.
+
+     -d --minimal
+             Minimize diff size.
+
+     -I --ignore-matching-lines regexp
+             Ignore line changes matching regexp.  All lines in the change
+             must match regexp for the change to be ignored.
+
+     -i --ignore-case
+             Do a case-insensitive comparison.
+
+     -t --expand-tabs
+             Expand tabs to spaces.
+
+     -W --ignore-all-space
+             Ignore all spaces.
+
+     -B --ignore-blank-lines
+             Ignore blank lines.
+
+     -E --ignore-tab-expansion
+             Treat tabs and eight spaces as the same.
+
+     -t --ignore-tabs
+             Ignore tabs.
+
+     -H --speed-large-files
+             Assume scattered small changes in a large file.
+
+     --ignore-file-name-case
+             Ignore the case of file names.
+
+     --no-ignore-file-name-case
+             Do not ignore file name case.
+
+     --strip-trailing-cr
+             Skip identical lines.
+
+     --tabsize NUM
+             Change the size of tabs (default is 8.)
+
+     --diff-program PROGRAM
+             Use PROGRAM to compare files.
+
+ENVIRONMENT
+     EDITOR, VISUAL
+             Specifies an editor to use with the -o option.  If both EDITOR
+             and VISUAL are set, VISUAL takes precedence.  If neither EDITOR
+             nor VISUAL are set, the default is vi(1).
+
+     TMPDIR  Specifies a directory for temporary files to be created.  The
+             default is /tmp.
+
+SEE ALSO
+     cmp(1), diff(1), diff3(1), vi(1), re_format(7)
+
+AUTHORS
+     sdiff was written from scratch for the public domain by Ray Lai
+     ⟨ray@cyth.net⟩.
+
+CAVEATS
+     Tabs are treated as anywhere from one to eight characters wide, depending
+     on the current column.  Terminals that treat tabs as eight characters
+     wide will look best.
+
+macOS 14.7                       April 8, 2017                      macOS 14.7

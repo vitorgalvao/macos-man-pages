@@ -1,0 +1,41 @@
+pam_localauthentication(8)  System Manager's Manual pam_localauthentication(8)
+
+NAME
+     pam_localauthentication – LocalAuthentication PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_localauthentication
+     [options]
+
+DESCRIPTION
+     The LocalAuthentication PAM module supports the authentication function
+     class, function-class parameter is “auth”.
+
+   The LocalAuthentication Authentication Module
+     The LocalAuthentication authentication module permits or denies
+     authentication based on LAContext policy evaluation.
+
+     The module will try to create LAContext from the externalized blob
+     returned by previous invocation of “LAContext.externalizedContext”.  The
+     blob will be queried by pam_get_data(3) as data named “token_la”.
+
+     When the LAContext instance is successfully created, the module will try
+     to evaluate “LAPolicyDeviceOwnerAuthenticationWithBiometrics” on it with
+     user interaction disabled. The expectation is that the policy was already
+     successfully evaluated before. If so, then the authentication performed
+     by this module will succeed as well.
+
+     The following options may be passed to this authentication module:
+
+     continuityunlock
+             Use the alternative LAContext for AppleWatch unlock. The
+             LAContext blob will be queried by pam_get_data(3) as data named
+             “token_lacont” and the policy evaluated will be
+             “LAPolicyContinuityUnlock”.
+
+
+SEE ALSO
+     mbr_check_membership(3), pam.conf(5), pam(8), pwpolicy(8),
+     pam_get_data(3)
+
+macOS 14.7                      March 20, 2023                      macOS 14.7
