@@ -5,8 +5,9 @@ NAME
      machine
 
 SYNOPSIS
-     ssh-copy-id [-f] [-n] [-s] [-x] [-i [identity_file]] [-p port]
-                 [-o ssh_option] [-t target_path] [user@]hostname
+     ssh-copy-id [-f] [-n] [-s] [-x] [-i [identity_file]] [-t target_path]
+                 [-F ssh_config] [[-o ssh_option] ...] [-p port]
+                 [user@]hostname
      ssh-copy-id -h | -?
 
 
@@ -27,7 +28,7 @@ DESCRIPTION
 
      The options are as follows:
 
-     -i identity_file
+     -i [identity_file]
              Use only the key(s) contained in identity_file (rather than
              looking for identities via ssh-add(1) or in the default_ID_file).
              If the filename does not end in .pub this is added.  If the
@@ -56,10 +57,13 @@ DESCRIPTION
              the path on the target system where the keys should be added
              (defaults to ".ssh/authorized_keys")
 
-     -p port, -o ssh_option
-             These two options are simply passed through untouched, along with
-             their argument, to allow one to set the port or other ssh(1)
-             options, respectively.
+     -p port
+             Specifies the port to connect to on the remote host.
+
+     -F ssh_config, -o ssh_option
+             These options are simply passed through untouched (with their
+             argument) to ssh/sftp, allowing one to set an alternative config
+             file, or other options, respectively.
 
              Rather than specifying these as command line options, it is often
              better to use (per-host) settings in ssh(1)'s configuration file:

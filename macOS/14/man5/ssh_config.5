@@ -662,19 +662,19 @@ DESCRIPTION
              VARIABLES section.
 
      IdentityFile
-             Specifies a file from which the user's DSA, ECDSA, authenticator-
+             Specifies a file from which the user's ECDSA, authenticator-
              hosted ECDSA, Ed25519, authenticator-hosted Ed25519 or RSA
              authentication identity is read.  You can also specify a public
              key file to use the corresponding private key that is loaded in
              ssh-agent(1) when the private key file is not present locally.
              The default is ~/.ssh/id_rsa, ~/.ssh/id_ecdsa,
-             ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk and
-             ~/.ssh/id_dsa.  Additionally, any identities represented by the
-             authentication agent will be used for authentication unless
-             IdentitiesOnly is set.  If no certificates have been explicitly
-             specified by CertificateFile, ssh(1) will try to load certificate
-             information from the filename obtained by appending -cert.pub to
-             the path of a specified IdentityFile.
+             ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519 and ~/.ssh/id_ed25519_sk.
+             Additionally, any identities represented by the authentication
+             agent will be used for authentication unless IdentitiesOnly is
+             set.  If no certificates have been explicitly specified by
+             CertificateFile, ssh(1) will try to load certificate information
+             from the filename obtained by appending -cert.pub to the path of
+             a specified IdentityFile.
 
              Arguments to IdentityFile may use the tilde syntax to refer to a
              user's home directory or the tokens described in the TOKENS
@@ -703,14 +703,15 @@ DESCRIPTION
 
      Include
              Include the specified configuration file(s).  Multiple pathnames
-             may be specified and each pathname may contain glob(7) wildcards
-             and, for user configurations, shell-like ‘~’ references to user
-             home directories.  Wildcards will be expanded and processed in
-             lexical order.  Files without absolute paths are assumed to be in
-             ~/.ssh if included in a user configuration file or /etc/ssh if
-             included from the system configuration file.  Include directive
-             may appear inside a Match or Host block to perform conditional
-             inclusion.
+             may be specified and each pathname may contain glob(7) wildcards,
+             tokens as described in the TOKENS section, environment variables
+             as described in the ENVIRONMENT VARIABLES section and, for user
+             configurations, shell-like ‘~’ references to user home
+             directories.  Wildcards will be expanded and processed in lexical
+             order.  Files without absolute paths are assumed to be in ~/.ssh
+             if included in a user configuration file or /etc/ssh if included
+             from the system configuration file.  Include directive may appear
+             inside a Match or Host block to perform conditional inclusion.
 
      IPQoS   Specifies the IPv4 type-of-service or DSCP class for connections.
              Accepted values are af11, af12, af13, af21, af22, af23, af31,
@@ -738,17 +739,24 @@ DESCRIPTION
              OpenSSH server, it may be zero or more of: bsdauth and pam.
 
      KexAlgorithms
-             Specifies the available KEX (Key Exchange) algorithms.  Multiple
-             algorithms must be comma-separated.  If the specified list begins
-             with a ‘+’ character, then the specified algorithms will be
-             appended to the default set instead of replacing them.  If the
-             specified list begins with a ‘-’ character, then the specified
-             algorithms (including wildcards) will be removed from the default
-             set instead of replacing them.  If the specified list begins with
-             a ‘^’ character, then the specified algorithms will be placed at
-             the head of the default set.  The default is:
+             Specifies the permitted KEX (Key Exchange) algorithms that will
+             be used and their preference order.  The selected algorithm will
+             be the first algorithm in this list that the server also
+             supports.  Multiple algorithms must be comma-separated.
 
-                   sntrup761x25519-sha512@openssh.com,
+             If the specified list begins with a ‘+’ character, then the
+             specified algorithms will be appended to the default set instead
+             of replacing them.  If the specified list begins with a ‘-’
+             character, then the specified algorithms (including wildcards)
+             will be removed from the default set instead of replacing them.
+             If the specified list begins with a ‘^’ character, then the
+             specified algorithms will be placed at the head of the default
+             set.
+
+             The default is:
+
+                   sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,
+                   mlkem768x25519-sha256,
                    curve25519-sha256,curve25519-sha256@libssh.org,
                    ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,
                    diffie-hellman-group-exchange-sha256,
@@ -756,7 +764,7 @@ DESCRIPTION
                    diffie-hellman-group18-sha512,
                    diffie-hellman-group14-sha256
 
-             The list of available key exchange algorithms may also be
+             The list of supported key exchange algorithms may also be
              obtained using "ssh -Q kex".
 
      KnownHostsCommand
@@ -819,9 +827,9 @@ DESCRIPTION
 
      LogVerbose
              Specify one or more overrides to LogLevel.  An override consists
-             of a pattern lists that matches the source file, function and
-             line number to force detailed logging for.  For example, an
-             override pattern of:
+             of one or more pattern lists that matches the source file,
+             function and line number to force detailed logging for.  For
+             example, an override pattern of:
 
                    kex.c:*:1000,*:kex_exchange_identification():*,packet.c:*
 
@@ -1380,7 +1388,7 @@ TOKENS
            %t    The type of the server host key, e.g.  ssh-ed25519.
            %u    The local username.
 
-     CertificateFile, ControlPath, IdentityAgent, IdentityFile,
+     CertificateFile, ControlPath, IdentityAgent, IdentityFile, Include,
      KnownHostsCommand, LocalForward, Match exec, RemoteCommand,
      RemoteForward, RevokedHostKeys, and UserKnownHostsFile accept the tokens
      %%, %C, %d, %h, %i, %j, %k, %L, %l, %n, %p, %r, and %u.
@@ -1408,9 +1416,9 @@ ENVIRONMENT VARIABLES
      the setting for that keyword will be ignored.
 
      The keywords CertificateFile, ControlPath, IdentityAgent, IdentityFile,
-     KnownHostsCommand, and UserKnownHostsFile support environment variables.
-     The keywords LocalForward and RemoteForward support environment variables
-     only for Unix domain socket paths.
+     Include, KnownHostsCommand, and UserKnownHostsFile support environment
+     variables.  The keywords LocalForward and RemoteForward support
+     environment variables only for Unix domain socket paths.
 
 FILES
      ~/.ssh/config
@@ -1435,4 +1443,4 @@ AUTHORS
      created OpenSSH.  Markus Friedl contributed the support for SSH protocol
      versions 1.5 and 2.0.
 
-macOS 14.7                     February 21, 2024                    macOS 14.7
+macOS 14.7                     September 9, 2024                    macOS 14.7
