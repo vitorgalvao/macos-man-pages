@@ -1,0 +1,110 @@
+CMP(1)                      General Commands Manual                     CMP(1)
+
+NAME
+     cmp – compare two files
+
+SYNOPSIS
+     cmp [-l | -s | -x] [-bhz] [--ignore-initial=num1[:num2]] [--bytes=num]
+         file1 file2 [skip1 [skip2]]
+
+DESCRIPTION
+     The cmp utility compares two files of any type and writes the results to
+     the standard output.  By default, cmp is silent if the files are the
+     same; if they differ, the byte and line number at which the first
+     difference occurred is reported.
+
+     Bytes and lines are numbered beginning with one.
+
+     The following options are available:
+
+     -b, --print-bytes
+             Print each byte when a difference is found.
+
+     -h      Do not follow symbolic links.
+
+     -i num1[:num2], --ignore-initial=num1[:num2]
+             Skip num1 bytes from file1, and optionally skip num2 bytes from
+             file2.  If num2 is not specified, then num1 is applied for both
+             file1 and file2.
+
+     -l, --verbose
+             Print the byte number (decimal) and the differing byte values
+             (octal) for each difference.
+
+     -n num, --bytes=num
+             Only compare up to num bytes.
+
+     -s, --silent, --quiet
+             Print nothing for differing files; return exit status only.
+
+     -x      Like -l but prints in hexadecimal and using zero as index for the
+             first byte in the files.
+
+     -z      For regular files compare file sizes first, and fail the
+             comparison if they are not equal.
+
+     The optional arguments skip1 and skip2 are the byte offsets from the
+     beginning of file1 and file2, respectively, where the comparison will
+     begin.  The offset is decimal by default, but may be expressed as a
+     hexadecimal or octal value by preceding it with a leading ``0x'' or
+     ``0''.
+
+     skip1 and skip2 may also be specified with SI size suffixes.
+
+EXIT STATUS
+     The cmp utility exits with one of the following values:
+
+     0     The files are identical.
+
+     1     The files are different; this includes the case where one file is
+           identical to the first part of the other.  In the latter case, if
+           the -s option has not been specified, cmp writes to standard error
+           that EOF was reached in the shorter file (before any differences
+           were found).
+
+     >1    An error occurred.
+
+EXAMPLES
+     Assuming a file named example.txt with the following contents:
+
+           a
+           b
+           c
+
+     Compare stdin with example.txt:
+
+           $ echo -e "a\nb\nc" | cmp - example.txt
+
+     Same as above but introducing a change in the third byte of stdin.  Show
+     the byte number (decimal) and differing byte (octal):
+
+           $ echo -e "a\nR\nc" | cmp -l - example.txt
+                3 122 142
+
+     Compare file sizes of example.txt and /boot/loader.conf and return 1 if
+     they are not equal.  Note that -z can only be used with regular files:
+
+           $ cmp -z example.txt /boot/loader.conf
+           example.txt /boot/loader.conf differ: size
+
+     Compare stdin with example.txt omitting the first 4 bytes from stdin and
+     the first 2 bytes from example.txt:
+
+           $ echo -e "a\nR\nb\nc" | cmp - example.txt 4 2
+
+SEE ALSO
+     diff(1), diff3(1)
+
+STANDARDS
+     The cmp utility is expected to be IEEE Std 1003.2 (“POSIX.2”) compatible.
+     The -b, -h, -i, -n, -x, and -z options are extensions to the standard.
+     skip1 and skip2 arguments are extensions to the standard.
+
+HISTORY
+     A cmp command appeared in Version 1 AT&T UNIX.
+
+BUGS
+     The phrase “SI size suffixes” above refers to the traditional power of
+     two convention, as described in expand_number(3).
+
+macOS 26.0                    September 23, 2021                    macOS 26.0

@@ -1,0 +1,161 @@
+TFTPD(8)                    System Manager's Manual                   TFTPD(8)
+
+NAME
+     tftpd – Internet Trivial File Transfer Protocol server
+
+SYNOPSIS
+     tftpd [-CcdilnoSw] [-F strftime-format] [-s directory] [-U umask]
+           [-u user] [directory ...]
+
+DESCRIPTION
+     The tftpd utility is a server which supports the Internet Trivial File
+     Transfer Protocol (RFC 1350).  The TFTP server operates at the port
+     indicated in the ‘tftp’ service description; see services(5).  This
+     server should not be started manually; instead, it should be run using
+     launchd(8) using the plist /System/Library/LaunchDaemons/tftp.plist.  It
+     may be started using the launchctl(1) load command; refer to the
+     documentation for that utility for more information.
+
+     The use of tftp(1) does not require an account or password on the remote
+     system.  Due to the lack of authentication information, tftpd will allow
+     only publicly readable files to be accessed.  Files containing the string
+     “/../” or starting with “../” are not allowed.  Files may be written only
+     if they already exist (unless the -w option is used) and are publicly
+     writable (unless chrooted and the -S option is used).  Note that this
+     extends the concept of “public” to include all users on all hosts that
+     can be reached through the network; this may not be appropriate on all
+     systems, and its implications should be considered before enabling tftp
+     service.  The server should have the user ID with the lowest possible
+     privilege.
+
+     Access to files may be restricted by invoking tftpd with a list of
+     directories by including up to 20 pathnames as server program arguments
+     in /System/Library/LaunchDaemons/tftp.plist.  In this case access is
+     restricted to files whose names are prefixed by the one of the given
+     directories.  The given directories are also treated as a search path for
+     relative filename requests.
+
+     The -s option provides additional security by changing the root directory
+     of tftpd, thereby prohibiting accesses to outside of the specified
+     directory.  Because chroot(2) requires super-user privileges, tftpd must
+     be run as root.  However, after performing the chroot(2) call, tftpd will
+     set its user ID to that of the specified user, or “nobody” if no -u
+     option is specified.
+
+     The options are:
+
+     -c      Changes the default root directory of a connecting host via
+             chroot(2) based on the connecting IP address.  This prevents
+             multiple clients from writing to the same file at the same time.
+             If the directory does not exist, the client connection is
+             refused.  The -s option is required for -c and the specified
+             directory is used as a base.
+
+     -C      Operates the same as -c except it falls back to directory
+             specified via -s if a directory does not exist for the client's
+             IP.
+
+     -F      Use this strftime(3) compatible format string for the creation of
+             the suffix if -W is specified.  By default the string "%Y%m%d" is
+             used.
+
+     -d, -d [value]
+             Enables debug output.  If value is not specified, then the debug
+             level is increased by one for each instance of -d which is
+             specified.
+
+             If value is specified, then the debug level is set to value.  The
+             debug level is a bitmask implemented in
+             src/libexec/tftpd/tftp-utils.h.  Valid values are 0 (DEBUG_NONE),
+             1 (DEBUG_PACKETS), 2, (DEBUG_SIMPLE), 4 (DEBUG_OPTIONS), and 8
+             (DEBUG_ACCESS).  Multiple debug values can be combined in the
+             bitmask by logically OR'ing the values.  For example, specifying
+             -d 15 will enable all the debug values.
+
+     -i      Ignored for backward compatibility.
+
+     -l      Log all requests using syslog(3) with the facility of LOG_FTP.
+             Note: Logging of LOG_FTP messages must also be enabled in the
+             syslog configuration file, syslog.conf(5).
+
+     -n      Suppress negative acknowledgement of requests for nonexistent
+             relative filenames.
+
+     -o      Disable support for RFC2347 style TFTP Options.
+
+     -s directory
+             Cause tftpd to change its root directory to directory.  After
+             doing that but before accepting commands, tftpd will switch
+             credentials to an unprivileged user.
+
+     -S      If tftpd runs chrooted, the option allows write requests
+             according to generic file permissions, skipping requirement for
+             files to be publicly writable.  The option is ignored for non-
+             chrooted run.
+
+     -u user
+             Switch credentials to user (default “nobody”) when the -s option
+             is used.  The user must be specified by name, not a numeric UID.
+
+     -U umask
+             Set the umask for newly created files.  The default is 022
+             (S_IWGRP | S_IWOTH).
+
+     -w      Allow write requests to create new files.  By default tftpd
+             requires that the file specified in a write request exist.  Note
+             that this only works in directories writable by the user
+             specified with -u option
+
+     -W      As -w but append a YYYYMMDD.nn sequence number to the end of the
+             filename.  Note that the string YYYYMMDD can be changed with the
+             -F option.
+
+SEE ALSO
+     launchctl(1), tftp(1), chroot(2), syslog(3), launchd.plist(5),
+     services(5), syslog.conf(5), launchd(8)
+
+     The following RFC's are supported:
+
+     RFC 1350: The TFTP Protocol (Revision 2).
+
+     RFC 2347: TFTP Option Extension.
+
+     RFC 2348: TFTP Blocksize Option.
+
+     RFC 2349: TFTP Timeout Interval and Transfer Size Options.
+
+     RFC 7440: TFTP Windowsize Option.
+
+     The non-standard rollover and blksize2 TFTP options are mentioned here:
+
+     Extending TFTP, http://www.compuphase.com/tftp.htm.
+
+HISTORY
+     The tftpd utility appeared in 4.2BSD; the -s option was introduced in
+     FreeBSD 2.2, the -u option was introduced in FreeBSD 4.2, the -c option
+     was introduced in FreeBSD 4.3, the -F and -W options were introduced in
+     FreeBSD 7.4, and the -S option was introduced in FreeBSD 13.3.
+
+     Support for Timeout Interval and Transfer Size Options (RFC2349) was
+     introduced in FreeBSD 5.0, support for the TFTP Blocksize Option
+     (RFC2348) and the blksize2 option was introduced in FreeBSD 7.4.
+
+     Edwin Groothuis <edwin@FreeBSD.org> performed a major rewrite of the
+     tftpd and tftp(1) code to support RFC2348.
+
+     Support for the windowsize option (RFC7440) was introduced in
+     FreeBSD 13.0.
+
+NOTES
+     Files larger than 33,553,919 octets (65535 blocks, last one <512 octets)
+     cannot be correctly transferred without client and server supporting
+     blocksize negotiation (RFCs 2347 and 2348), or the non-standard TFTP
+     rollover option.  As a kludge, tftpd accepts a sequence of block number
+     which wrap to zero after 65535, even if the rollover option is not
+     specified.
+
+     Many tftp clients will not transfer files over 16,776,703 octets (32767
+     blocks), as they incorrectly count the block number using a signed rather
+     than unsigned 16-bit integer.
+
+macOS 26.0                        May 8, 2024                       macOS 26.0

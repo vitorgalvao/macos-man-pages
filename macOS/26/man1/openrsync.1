@@ -1,0 +1,904 @@
+OPENRSYNC(1)                General Commands Manual               OPENRSYNC(1)
+
+NAME
+     openrsync – synchronise local and remote files
+
+SYNOPSIS
+     openrsync [-0468BCDEFHILOPRSTWVabcdefghiklmnopqrtuvxyz] [-e program]
+               [-f filter] [--address=sourceaddr] [--append]
+               [--backup-dir=directory] [--bwlimit=limit]
+               [--cache | --no-cache] [--checksum-seed=NUM] [--chmod=MODE]
+               [--compare-dest=directory] [--compress-level=NUM]
+               [--contimeout=seconds] [--copy-dest=directory]
+               [--copy-unsafe-links] [--del] [--delay-updates]
+               [--delete-before] [--delete-during] [--delete-delay]
+               [--delete-after] [--delete-excluded] [--exclude pattern]
+               [--exclude-from=file] [--extended-attributes]
+               [--files-from=filespec] [--force] [--ignore-errors]
+               [--ignore-existing] [--ignore-non-existing] [--include pattern]
+               [--include-from=file] [--inplace] [--keep-dirlinks]
+               [--link-dest=directory] [--list-only] [--log-file=file]
+               [--log-file-format=format] [--max-delete=MAX] [--max-size=size]
+               [--min-size=size] [--modify-window=sec] [--no-implied-dirs]
+               [--no-motd] [--numeric-ids] [--partial] [--partial-dir=DIR]
+               [--password-file=pwfile] [--port=service] [--progress=VER]
+               [--protocol] [--read-batch=file] [--remove-source-files]
+               [--rsync-path=program] [--safe-links] [--size-only]
+               [--sockopts=sockopts] [--specials] [--stats] [--suffix=suffix]
+               [--super] [--timeout=seconds]
+               [--only-write-batch=file | --write-batch=file] source ...
+               directory
+
+     openrsync --daemon [-46hv] [--address=bindaddr] [--bwlimit=bwlimit]
+               [--config=configfile] [--no-detach] [--log-file=logfile]
+               [--port=service] [--sockopts=sockopts]
+
+DESCRIPTION
+     The openrsync utility synchronises files in the destination directory
+     with one or more source files.  Either the source or the destination
+     directory may be remote, but not both.  The arguments are as follows:
+
+     -4, --ipv4
+             Use IPv4 when connecting to a remote host, or binding to a local
+             address.  If openrsync is configured to use an --rsh program
+             named “ssh”, then it will pass -4 to it.
+
+     -6, --ipv6
+             Use IPv6 when connecting to a remote host, or binding to a local
+             address.  As with the -4 option, openrsync will pass -6 to the
+             --rsh program if it is named “ssh”.
+
+     -8, --8-bit-output
+             Do not escape high-bit characters in the output (which is
+             otherwise the default).
+
+     -a, --archive
+             Shorthand for -Dgloprt.
+
+     --address=sourceaddr
+             When connecting to an rsync daemon, use sourceaddr as the source
+             address for connections, which is useful on machines with
+             multiple interfaces.
+
+     --append
+             If the destination file exists and is shorter than the source
+             file then rsync will append the difference to the destination
+             file.  If after the transfer the whole-file checksums do not
+             match then the destination file will be updated via the usual
+             block-based delta-merge protocol.  This option implies --inplace.
+
+     -b, --backup
+             Make a backup of changed files with ~ suffix.
+
+     --backup-dir directory
+             When combined with the --backup flag, openrsync will store
+             backups of files being replaced in the designated backup
+             directory on the receiving side.  Can be combined with the
+             --suffix flag to name the backup files with a suffix.  The
+             default is to not append a suffix.
+
+             If specified as a relative path, the backup directory will be
+             contained within the copied tree, and may cause conflicts or be
+             subject to --delete rules.  It is advised to use an absolute path
+             outside of the copied tree, or a relative path such as "../".
+
+     -B, --block-size=BLOCKSIZE
+             Specify the block size to be used for file transfers.  The upper
+             bound is 512M, but it is enforced only if a differential transfer
+             is required.
+
+     --blocking-io
+             This flag is ignored by openrsync, but is accepted for
+             compatibility.
+
+     --bwlimit limit
+             Limit transfer speed to limit bytes/sec.  The limit may also
+             contain any of the suffixes described in the --max-size
+             definition of size.
+
+     --cache
+             Use the operating system buffer cache when reading and writing
+             files.  This is the default on all operating systems except
+             macOS, where openrsync sets F_NOCACHE by default to limit memory
+             growth.  Setting this option will enabling caching by not setting
+             any flags.
+
+     --no-cache
+             Sets O_DIRECT when reading and writing files to avoid using the
+             buffer cache.  Setting this option can avoid filling the cache
+             with files that will not be read again, such as during a backup.
+             This is the default on macOS, where F_NOCACHE is used instead of
+             O_DIRECT.
+
+     -c, --checksum
+             Use full-file checksums to determine which files have changed and
+             should be transferred, rather than the usual file size and
+             modification time "quick check".
+
+     --checksum-seed=NUM
+             Use NUM as the seed for both the 4-byte block and MD4 file
+             checksums.  By default, NUM is randomly generated, but if set to
+             zero directs openrsync to use time(3) as the checksum seed.
+
+     --chmod=MODE
+             Modify the permissions on files that are transferred, overriding
+             the original source permissions.  Only has an effect if --perms
+             is specified as well.  The MODE string can be a comma separated
+             list of literal (755) or relative (g+w) permissions.
+
+             openrsync also supports two additional extensions to relative
+             permissions, adding a ‘D’ or ‘F’ infront of the relative
+             permissions will apply the changes to only directories or files
+             respectively.  For example: -chmod=Dg+w,Fo-w
+
+     --compare-dest=directory
+             Use directory as an alternate base directory to compare files
+             against on the destination machine.  If file in directory is
+             found and identical to the sender's file, the file will not be
+             transferred.  Multiple --compare-dest directories may be
+             provided.  If directory is a relative path, it is relative to the
+             destination directory.
+
+     -z, --compress
+             Compress file data during transfer to reduce the amount of data
+             transferred.
+
+     --compress-level=NUM
+             Set the compression level used by --compress.
+
+     --contimeout=seconds
+             Set the connection timeout in seconds.  Exit if no connection
+             established within the specified time.  The default is 0, which
+             means no timeout.
+
+     --copy-dest=directory
+             Use directory as an alternate base directory to compare files
+             against on the destination machine.  If file in directory is
+             found and identical to the sender's file, the file will be
+             locally copied.  Multiple --copy-dest directories may be
+             provided.  If directory is a relative path, it is relative to the
+             destination directory.
+
+     -L, --copy-links
+             Copy targets of symbolic links, rather than the link itself.
+
+     --copy-unsafe-links
+             Copy targets of symbolic links that are unsafe (absolute symlinks
+             or where the target reaches outside the copied tree).
+
+     -k, --copy-dirlinks
+             Copy targets of symbolic links that point to directories only.
+
+     -C, --cvs-exclude
+             Exclude a common list of files as CVS would.  The patterns
+             deployed are specifically:
+
+                   RCS            SCCS            CVS      CVS.adm
+                   RCSLOG         cvslog.*        tags     TAGS
+                   .make.state    .nse_depinfo    *~       #*
+                   .#*            ,*              _$*      *$
+                   *.old          *.bak           *.BAK    *.orig
+                   *.rej          .del-*          *.a      *.olb
+                   *.o            *.obj           *.so     *.exe
+                   *.Z            *.elc           *.ln     core
+                   .svn/
+             Followed by any patterns included in $HOME/.cvsignore and the
+             CVSIGNORE environment variable.
+
+             The -C flag also adds a “dir-merge” CVS rule to include per-dir
+             .cvsignore files.  All of these rules are appended to the end of
+             the filter list with the equivalent of specifying -f “-C” -f
+             “:C”.
+
+     -D      Also transfer device and special files.  Shorthand for --devices
+             --specials.
+
+     --del, --delete
+             Delete files in directory not found in source directories.  Only
+             applicable with -r.
+
+     --delay-updates
+             Delay updates of (only) plain files until all other operations
+             are complete.  This is done to be more atomic.  Requires extra
+             space in the destination directory up to the amount of the whole
+             tree.
+
+     --delete-before
+             Execute the above described --delete behavior before the transfer
+             begins.  This is the default timing when
+
+     --delete
+             is used.  This option is mutually exclusive with --delete-during,
+             --delete-delay, and --delete-after.
+
+     --delete-during
+             Execute the above described --delete behavior as the transfer
+             happens, right before each directory to be transferred is checked
+             for updates.  This option is mutually exclusive with
+             --delete-before, --delete-delay, and --delete-after.
+
+     --delete-delay
+             Execute the above described --delete behavior after the transfer
+             happens, but collect the list to be deleted right before each
+             directory to be transferred is checked for updates.  This option
+             is mutually exclusive with --delete-before, --delete-during, and
+             --delete-after.
+
+     --delete-after
+             Execute the above described --delete behavior after the transfer
+             has completed.  This option is mutually exclusive with
+             --delete-before, --delete-during, and --delete-delay.
+
+     --delete-excluded
+             When used in combination with any one of the above --delete
+             options, supplied --exclude patterns will not prevent a file from
+             being deleted.
+
+     -d, --dirs
+             Copies directories, which are normally skipped unless --recursive
+             is specified.  Directory contents are not copied, unless the path
+             specified includes a trailing slash (“dir/”), or is the literal
+             “.”.
+
+     --exclude pattern
+             Exclude files matching pattern.
+
+     --exclude-from=file
+             Load patterns and rules from file.
+
+     --extended-attributes
+             Apple specific option to copy extended attributes, resource
+             forks, and ACLs.  Requires at least Mac OS X 10.4 or suitably
+             patched rsync.
+
+     -E, --executability
+             Preserve the executability of regular files (i.e., a file is
+             "executable" if at least one 'x' mode bit is enabled in its
+             permissions).  If the source file is executable, then for each
+             'r' mode bit enabled in the destination file's permissions, the
+             corresponding 'x' mode bit will be enabled.  If the source file
+             is not executable then all ugo 'x' mode bits of the destination
+             file will be disabled.  This option has no effect if --perms is
+             also specified.
+
+     -0, --from0
+             Use a null ('\0') character, rather than a newline to separate
+             filenames read from: --exclude-from, --include-from,
+             --files-from, and any merged files specified in --filter rules.
+             Does not affect --cvs-exclude.
+
+     --files-from=filespec
+             Load list of files to transfer (as opposed to the command line)
+             from filespec.  Filespec can be of the form hostname:port:path.
+
+     --force
+             Force deletion of non-empty directories about to be replaced by a
+             non-directory.  This option has no effect if any of the --delete
+             options are present.
+
+     --ignore-errors
+             Works in conjunction with --delete to delete files despite I/O
+             errors.
+
+     -y, --fuzzy
+             Look for files in the destination directory that might be the
+             same to use as a basis to avoid copying the entire file.  The
+             first file with an identical size and modification time is used
+             to try to reduce the total amount of data that has to be
+             transferred.
+
+             Note that the use of the --delete option might get rid of any
+             potential fuzzy-matches, so either use --delete-after or specify
+             some exclusions to prevent this.
+
+     --ignore-existing
+             Ignore files that already exist.
+
+     --ignore-non-existing, --existing
+             Ignore files that do not already exist (do not create them).
+
+     -I, --ignore-times
+             Do not skip based on file size and modification time.
+
+     --include pattern
+             Include files matching pattern.
+
+     --include-from=file
+             Load patterns and rules from file.
+
+     --devices
+             Also transfer device files.
+
+     -e program, --rsh=program
+             Specify alternative communication program, defaults to ssh(1).
+             The RSYNC_RSH environment variable will be used if an -e option
+             is not present.  Note that openrsync will generally handle
+             quotes, but it makes no attempt to deal with escape sequences.
+             In particular, escaped quotation marks will not be escaped.
+
+     -F      Adds a standard .rsync-filter dir-merge filter rule.
+             Specifically, -F will add “: /.rsync-filter” the first time it is
+             seen, and “- .rsync-filter” the second time it is seen.
+             Subsequent uses have no effect.
+
+     -f filter, --filter=filter
+             Process filter against the global filter chain.  The specified
+             filter may be a rule to include a filter file, or to include a
+             per-directory filter file.  Regular filter files are processed
+             immediately, while per-directory filter files are processed as
+             directories are encountered.  See PATTERNS AND RULES for more
+             details about the syntax and capabilities of openrsync filters.
+
+     -g, --group
+             Set the group name to match the source.  For example, group
+             "kristaps" with ID 1000 on a remote server is matched to group
+             "kristaps" on the local machine with ID 2000.  If --numeric-ids
+             is also given or if the remote group name is unknown on the local
+             machine, set the numeric group ID to match the source instead.
+
+     -H, --hard-links
+             Attempt to preserve hard links within the list of files
+             transferred.
+
+     -h, --human-readable
+             Display numbers of bytes in human readable units.  If specified
+             once, uses units of 1000, if specified twice uses units of 1024.
+
+     --help  Print a brief description of all options.
+
+     -l, --links
+             Also transfer symbolic links.  The link is transferred as a
+             standalone file: if the destination does not exist, it will be
+             broken.
+
+     --inplace
+             Avoid creating temporary files, instead operating on files
+             directly in place in the destination.  This option has some
+             notable trade-offs that must be considered prior to using it.
+             For example, hardlinks will not be broken even if a file is no
+             longer hardlinked in the source directory.
+
+     --keep-dirlinks
+             When a directory is sent, and the receiving side has a symlink to
+             a directory in that place, follow that symlink and place the
+             directory's contents in that symlinked dir.
+
+     --link-dest=directory
+             Use directory as an alternate base directory to compare files
+             against on the destination machine.  If file in directory is
+             found and identical to the sender's file, the file will be
+             hardlinked.  Multiple --compare-dest directories may be provided.
+             If directory is a relative path, it is relative to the
+             destination directory.
+
+     --list-only
+             Instead of transferring files, only list them.  This option is
+             implied if there is only a single source argument and no
+             destination argument.
+
+     --log-file=file
+             Specify a file to log to instead of stdout.  This implies a
+             --log-file-format of “%i %n%L” if none was previously specified.
+
+     --log-file-format=format
+             Specify a log format for each file involved in the transfer.  The
+             format argument may contain any number of tokens, like “%i”, with
+             special meaning.  The following tokens are defined for daemon
+             mode, but are also accepted for normal openrsync usage:
+
+             %a  The client's remote IP address.
+
+             %h  The client's hostname.
+
+             %m  The module requested by the client.
+
+             %P  The path to the module requested by the client.
+
+             %u  The username that the client has authenticated as.
+
+             These tokens are globally defined:
+
+             %b  The number of bytes transferred.
+
+             %B  The file mode, in a human-readable format.
+
+             %c  The size of block checksums received for the source file.
+                 This is not currently implemented by this implementation, but
+                 will be accepted.
+
+             %f  The long-form filename without a trailing “/” indicator.
+
+             %G  The group of the file in decimal format, or “DEFAULT” when
+                 the group is 0.
+
+             %I  The itemized list of updates including unchanged files, as if
+                 --itemize-changes was specified twice.
+
+             %i  The itemized list of updates, as if --itemize-changes was
+                 specified.
+
+             %l  The length of the file.
+
+             %L  An indicator of the file being a symlink or a hardlink.  For
+                 hardlinks, this token is replaced with “=> FILENAME”.  For
+                 symlinks, this token is replaced with “=> FILENAME”.  For
+                 non-links, this token is replaced with the empty string.
+
+             %M  The mtime of the file, in full date-time format.
+
+             %n  The short-form filename with a trailing “/” indicator.
+
+             %o  The operation conducted on the file.  This can be one of
+                 “send”, “recv”, or “del.”.
+
+             %p  The PID of the rsync client.
+
+             %t  The current time, in date-time format.
+
+             %U  The user of the file in decimal format, or “DEFAULT” when the
+                 user is 0.
+
+     --max-delete MAX
+             Once MAX files have been deleted, do not delete any more files.
+
+     --max-size size
+             Don't transfer any file that is larger than size bytes.
+             Alternatively size may instead use a multiplier (such as 0B,
+             100B, 1023B, 1K, 1.5K, 5.5M; or any sequence with a case-
+             insensitive terminal scale multiplier of B, K, M, G, T, P, or E;
+             corresponding to bytes, kilobytes, and so on) to specify the
+             size.
+
+     --min-size size
+             Don't transfer any file that is smaller than size bytes.  See
+             --max-size on the definition of size.
+
+     --modify-window sec
+             When comparing file modification times for the purpose of
+             speeding up transfers consider offsets of up to sec seconds the
+             same.
+
+     -n, --dry-run
+             Do not actually modify the destination.  Mainly useful in
+             combination with -v.
+
+     --no-motd
+             Do not display the Message of the Day.
+
+     --numeric-ids
+             Ignore user and group names, use numeric user and group IDs only.
+             Has no effect unless -g or -o is also given.
+
+     -O, --omit-dir-times
+             Do not perserve the modification times of directories.  This can
+             be expensive when the directories reside on NFS.  This option is
+             inferred if you use --backup without --backup-dir.
+
+     -o, --owner
+             Set the user name to match the source, with similar matching
+             logic as for -g.  If --numeric-ids is also given or if the remote
+             user name is unknown on the local machine, set the numeric user
+             ID to match the source instead.  Only works if run as root.
+
+     -P      Shorthand for --partial --progress.
+
+     -p, --perms
+             Set destination file or directory permissions to match the source
+             when it is updated.
+
+     --partial
+             Do not remove partially transferred files if openrsync is
+             interrupted, which opens up the possibility for them to be easily
+             resumed later.
+
+     --partial-dir=DIR
+             Store all partially transferred files in DIR to allow an
+             interrupted transfer to resume without re-transferring files.
+             Implies -partial.
+
+     --password-file=pwfile
+             Define a file to read the password from when connecting to an
+             rsync daemon.  The password should be written on the first line
+             of the file, and may have a terminating newline.  The pwfile is
+             expected to not be readable by 'other', and to be owned by root
+             if openrsync is running as root.
+
+     --port=service
+             Specify an alternative TCP port number.  The service can be given
+             as a decimal integer or as a name to be looked up in the
+             services(5) database.  The default is “rsync”.
+
+     -m, --prune-empty-dirs
+             Prune empty directories from the file list on the receiver side.
+             Empty directories may be excluded from pruning with an exclude or
+             protect filter rule.  A directory wich only contains other empty,
+             non-excluded directories, is also considered empty.
+
+     -q, --quiet
+             Suppress all non-error related informational messages.
+
+     --progress
+             Periodically report file transfer progress.
+
+     --protocol=VER
+             Force openrsync to operate using the specified protocol version.
+             Normally the protocol version is negotiated automatically, but an
+             older protocol version can be forced with this flag.
+
+     -r, --recursive
+             If source designates a directory, synchronise the directory and
+             the entire subtree connected at that point.  If source ends with
+             a slash, only the subtree is synchronised, not the source
+             directory itself.  If source is a file, this has no effect.
+
+     --read-batch=file
+             Read a batch file previously prepared by openrsync from file.
+             See the --write-batch option for a description of a batch file.
+             When reading a batch file, the source arguments are optional and
+             ignored if specified.
+
+     --remove-source-files
+             Remove source files as they are transferred into directory.
+             Files are only removed once they are confirmed to be fully in
+             place.  By default openrsync will delete files as the transfer
+             progresses, but given its asynchronous nature there may be a
+             noticeable delay between a given file finishing its transfer and
+             its subsequent removal.
+
+             When combined with --delay-updates, files will be removed in a
+             larger batch toward the end of the transfer.
+
+     -R, --relative
+             Normally, pathnames on the commandline omit the directory
+             components.  This option will include the dir components.
+
+     --no-implied-dirs
+             Changes the default behavior of --relative such that implied
+             directories do not have their attributes modified, or are created
+             with default attributes, rather than the source attributes, if
+             they do not exist.  This allows the implied directories to
+             differ, including being a symlink on one side and a real
+             directory on the other.
+
+     --rsync-path=program
+             Run program on the remote host instead of the default rsync.
+
+     --size-only
+             Skip files whose sizes match (regardless of timestamp).
+
+     --safe-links
+             Skip any symlinks that are unsafe (absolute symlinks or where the
+             target is outside the copied tree).
+
+     --sockopts=sockopts
+             Set custom sockopts on the socket created to communicate with an
+             rsync daemon.  sockopts should be of the form
+             “name[=value][,...]”, where name matches an SO_* option described
+             in setsockopt(2).  Note that only the following options are
+             currently supported:
+
+                   SO_KEEPALIVE
+                   SO_REUSEADDR
+                   SO_SNDBUF
+                   SO_RCVBUF
+                   SO_SNDLOWAT
+                   SO_RCVLOWAT
+                   SO_SNDTIMEO
+                   SO_RCVTIMEO
+                   SO_REUSEPORT May not be available on all systems.
+
+     -S, --sparse
+             Attempt to efficiently handle sparse files.
+
+     --specials
+             Also transfer fifo and unix domain socket files.
+
+     --stats
+             Print verbose statistics about the transfer at the end of the
+             run.  Provides details about how much data transfer was saved by
+             openrsync.
+
+     --suffix suffix
+             Sets the suffix to be appended to filenames when creating backups
+             on the receiver before replacing files.  Defaults to ~ except
+             when combined with --backup-dir where the default is an empty
+             string.
+
+     --super
+             Always attempt traditionally super-user activities.  This flag
+             mostly interacts with the --owner, --group, and --devices
+             options, which may be permitted to unprivileged users on the
+             receiving end in some configurations.  --no-super is also
+             supported to avoid them entirely.
+
+     -T, --temp-dir=directory
+             Instead of creating temporarily files in the destination
+             directory, create them in the specified temporary directory.  If
+             this directory is on a different filesystem, that will require
+             moving the file rather than renaming it into place, and is
+             therefore not atomic.
+
+     --timeout=seconds
+             Set the I/O timeout in seconds.  Exit if no data was transferred
+             for the specified time.  The default is 0, which means no
+             timeout.
+
+     -t, --times
+             Set destination file and directory modification time to match the
+             source when it is updated or created.
+
+     -u, --update
+             Skip existing files on the destination that have a modification
+             time newer than the source file.
+
+     -v, --verbose
+             Increase verbosity.  Specify once for files being transferred,
+             twice for specific status, thrice for per-file transfer
+             information, and four times for per-file breakdowns.
+
+     -x, --one-file-system
+             Do not cross filesystem boundaries.  If this option is repeated,
+             all mount point directories from the copy are omitted.
+             Otherwise, it includes an empty directory at each mount point it
+             encounters.
+
+     -V, --version
+             Print version and exit.
+
+     -W, --whole-file
+             Copy the entire file rather than using the rsync incremental
+             algorithm.  This option may be faster, especially if the network
+             link is faster than the disk.
+
+     --only-write-batch=file
+             Prepare a batch file and write it to file.  With this option, the
+             batch file is written without updating the destination.  See the
+             below --write-batch option for a description of a batch file.
+
+     --write-batch=file
+             Prepare a batch file and write it to file.  A batch file is
+             composed of a small heading describing the transfer parameters
+             negotiated, followed by a raw dump of the data transmitted by the
+             sender.  When used with --read-batch on the other side, the
+             transfer is simply replayed from the batch file against the
+             application's reeceiver, and the destination tree is updated
+             accordingly.
+
+             Batch files are intended to reproduce an update to a destination
+             tree to many other identical trees without needing to establish a
+             direct connection between them.  This mechanism also avoids
+             having to perform many of the intermediate steps required for a
+             transfer, such as receiver-side checksums and blocking.
+
+     A remote source or directory has the syntax host:path for connecting via
+     ssh(1), or rsync://host/path or host::path for connecting to a remote
+     daemon.  Subsequent to the first remote source, the host may be dropped
+     to become just :path or ::path.
+
+     For connecting to a remote daemon with rsync://host or host::path, the
+     first path component is interpreted as a "module": host::module/path.
+     This only applies to the first source invocation; subsequent to that, the
+     module should not be specified.
+
+     By default, new destination files and directories are given the current
+     time and the source file permissions.  Updated files retain their
+     existing permissions.  It is an error if updated files have their file
+     types change (e.g., updating a directory with a file).
+
+     At this time, source may only consist of regular files, directories (only
+     with -r), or symbolic links (only with -l).  The destination directory
+     must be a directory and is created if not found.
+
+     openrsync also supports a --daemon mode, which may be run either
+     standalone or may be invoked by, e.g., inetd(8) or similar services that
+     hand a socket off to an external program for handling.
+
+     Daemon options that are shared with the non-daemon mode of openrsync
+     behave as described above.  Options specific to daemon mode are as
+     follows:
+
+     --config=configfile
+             Load daemon configuration from the named configfile instead of
+             the default location.  By default, openrsync will look for its
+             configuration at /etc/rsyncd.conf.  See rsyncd.conf(5) for
+             details of the format of this file.
+
+     --no-detach
+             Run the openrsync daemon in the foreground, instead of the
+             background.
+
+     Note that the openrsync daemon mode will log to syslog(3) by default
+     unless --log-file is specified, regardless of whether --no-detach has
+     been specified to run in the foreground or not.
+
+PATTERNS AND RULES
+     The -f, --include, --include-from, --exclude, and --exclude-from options
+     may be used to load a filter rule or a set of filter rules.  A single
+     filter rule consists of a type, an optional set of modifiers, and a
+     pattern.  Each type has a short name and a long name.  These will be
+     described in more depth shortly.
+
+     A filter file is a set of rules, one per line.  Comments are accepted,
+     starting with a ‘#’.  Empty lines are ignored.
+
+     Each rule is of the following form:
+
+     <TYPE>[,<MODIFIERS>] <PATTERN>
+
+     If the short name is used, then the comma separating the modifiers from
+     the rule type is optional.  The delimiter between the type/modifiers and
+     the pattern may also be an underbar instead of a space.
+
+     The following rule types are supported:
+
+           LONG NAME    SHORT NAME    DESCRIPTION
+           exclude      -             Exclude a file from the transfer
+           include      +             Include a file from the transfer
+           merge        .             Merge rules in from a file
+           dir-merge    :             Merge rules in from a per-directory file
+           hide         H             Hide a file from the transfer
+           show         S             “not hide a file from the transfer”
+           protect      P             Protect a file from deletion
+           risk         R             “not protect a file from deletion”
+           clear        !             Clear the current filter list
+
+     The following rule modifiers are supported for the “exclude” and
+     “include” rule types:
+
+           MODIFIER    DESCRIPTION
+           /           Match against the absolute pathname of the entry
+           !           Take effect if the pattern does not match the entry
+           C           Insert the global CVS exclusions
+           s           Marks a rule as sender-side only
+           r           Marks a rule as receiver-side only
+           p           Marks a rule as perishable (do not prevent removal of a
+                       directory)
+
+     The above modifiers will be ignored if applied to other rule types, with
+     the exception of “merge” and “dir-merge” rules.  See the Merge Rules
+     section for more details of the semantics.
+
+   Include and Exclude Rules
+     The six basic types of include and exclude rules briefly described above
+     are “exclude”, “include”, “hide”, “show”, “protect”, “risk”.
+
+     The “hide” and “show” types are sender-side versions of the “exclude” and
+     “include” rules, while the “protect” and “risk” types are their receiver-
+     side equivalents.
+
+     Each of these rules take a pattern that is typically matched against the
+     basename of a transfer candidate's name.  A trailing ‘/’ in the pattern
+     indicates that the entry should only match a directory name, while a
+     leading ‘/’ indicates that the pattern is anchored to the beginning of
+     the transfer path.  The beginning of the transfer path is either the root
+     of the transfer, or the directory containing a dir-merge file if the rule
+     in question comes from a dir-merge file.  A ‘/’ at any other position, or
+     a “**” in the pattern, will match against the full path to the transfer
+     entry beginning at the root of the transfer.
+
+     Patterns may contain any of the following wildcards.
+
+           WILDCARD    DESCRIPTION
+           ?           Matches any character, except ‘/’
+           *           Matches zero or more characters, except ‘/’
+           **          Matches zero or more characters
+           [           Character class, as in POSIX regular expressions
+           /***        Matches a directory and all of its contents
+
+     Backslashes may be used to escape one of the above wildcard characters,
+     but is ordinary when appearing before any other character.
+
+     Note that exclude rules with the “C” modifier applied do not take a
+     pattern.
+
+   Merge Rules
+     The merge rules, “merge” and “dir-merge”, are another way to insert a
+     filter rule file.  “merge” rules are evaluated once as soon as they are
+     processed, and the rules read in are inserted at the same position as the
+     merge file.  “dir-merge” rules are evaluated as openrsync progresses
+     through the file list, searching each directory encountered for the file
+     named in the rule's pattern.
+
+     If a “dir-merge” rule appears before a “clear” rule, it will not be
+     processed at all.
+
+     “dir-merge” rules are inserted into their own chain of rules, rather than
+     directly into the global ruleset.  “clear” rules appearing in a dir-
+     merged file do not affect the global ruleset.  As we find dir-merged
+     files in the transfer, their rules are prepended to their dir-merge chain
+     so that a deeper directory's rules take precedence over its parent's
+     rules.
+
+     When one of the above exclude/include modifiers are applied to “merge” or
+     “dir-merge” rule, those modifiers are applied to the exclude/include
+     rules within the file.  The following modifiers may additionally be
+     specified for merge rules:
+
+           MODIFIER    DESCRIPTION
+           -           All rules within are exclude rules
+           +           All rules within are include rules
+           C           File processing should assume CVS-compatible parsing
+           e           Exclude the file's name from the transfer
+           n           Rules are not inherited by subdirectories
+           w           Rules are word-split instead of line-split
+
+     The CVS-compatible modifier implies the ‘-’, ‘n’ and ‘w’ modifiers.  If a
+     filename is not supplied with it, then “.cvsignore” is used.
+
+ENVIRONMENT
+     The following environment variables affect execution of openrsync:
+
+     LOGNAME         This variable may also hold the username to use when
+                     connecting to an rsync daemon.  If LOGNAME is not set,
+                     then “nobody” will be used.
+
+     USER            This variable holds the username to use when connecting
+                     to an rsync daemon.  If USER is not set, then LOGNAME
+                     will be used.
+
+     RSYNC_RSH       This variable specifies the remote shell to use for
+                     remote connections.  The default remote shell is ssh(1)
+                     if neither RSYNC_RSH nor --rsh are specified.
+
+     RSYNC_PASSWORD  This variable specifies the password to use when
+                     connecting to an rsync daemon.  It will be ignored if the
+                     --password-file option is specified and passes the mode
+                     and owner check described above in the option's
+                     description.  On many systems, environment variables are
+                     readable by other processes and should be considered
+                     insecure.  Please prefer a password file instead.
+
+EXIT STATUS
+     The openrsync utility exits 0 on success, 1 if an error occurs, or 2 if
+     the remote protocol version is older than the local protocol version.
+
+EXAMPLES
+     A common invocation of openrsync is for archiving from a remote host to
+     the local computer:
+
+           % openrsync -av --delete remote:rpath /local/path
+
+     This will update the contents of /local/path/rpath with those on the
+     remote server.  Switching remote and local wil update the remote contents
+     instead:
+
+           % openrsync -av --delete /local/path remote:rpath
+
+     All examples use -t so that destination files inherit the source time.
+     If not changed, subsequent invocations of openrsync will then consider
+     the file up to date and not transfer block hashes.
+
+     To update the out-of-date remote files host:dest/bar and host:dest/baz
+     with the local ../src/bar and ../src/baz:
+
+           % openrsync -t ../src/bar ../src/baz host:dest
+
+     To update the out-of-date local files bar and baz with the remote files
+     host:src/bar and host:src/baz:
+
+           % openrsync -t host:src/bar :src/baz .
+
+     To update the out-of-date local files ../dest/bar and ../dest/baz with
+     bar and baz:
+
+           % openrsync -t bar baz ../dest
+
+     To update the out-of-date remote files in host:dest on a remote host
+     running openrsync with the local host running rsync(1):
+
+           % rsync --rsync-path openrsync -t ../dest/* host:dest
+
+SEE ALSO
+     ssh(1), rsync(5), rsyncd(5)
+
+STANDARDS
+     openrsync is compatible with rsync protocol versions 27 - 29 as supported
+     by the samba.org implementation of rsync.
+
+HISTORY
+     The openrsync utility has been available since OpenBSD 6.5.
+
+AUTHORS
+     The openrsync utility was written by Kristaps Dzonsons <kristaps@bsd.lv>.
+
+macOS 26.0                       June 12, 2025                      macOS 26.0

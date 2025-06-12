@@ -1,0 +1,55 @@
+NEWFS_FSKIT(8)              System Manager's Manual             NEWFS_FSKIT(8)
+
+NAME
+     newfs_fskit – construct a new file system using FSKit
+
+SYNOPSYS
+     newfs_fskit [--progress] -t fstype [module_options] resource
+
+DESCRIPTION
+     The newfs_fskit utility creates FSKit file systems.
+
+     The options are as follows:
+
+     --progress  causes newfs_fskit to display a progres bar during the
+                 creation operation.
+
+     -t fstype   Use the FSKit Module named fstype to perform the creation
+                 operation.
+
+     module_options Any options supplied as module_options are passed to the
+                 file system module as part of the operation.  The valid
+                 syntax for these options is set by the specified module.
+
+     If the selected module's syntax supports a -t option, it is possible for
+     a command invocation to have multiple -t instances. The first instance
+     must follow the syntax here and include the fstype.  The second may
+     appear anywhere within the module_options and follow the syntax of the
+     module.
+
+RESOURCE
+     FSModules use different storage and connection technologies as the basis
+     for file systems. FSKit uses the term Resource to cover this variety.
+     FSKit recognizes three categories of resources:
+
+     Block Device  This category covers traditional disk drives and
+                   partitions. An example resource of this kind is:
+                   /dev/disk2s1 or /dev/rdisk2s1.  FSKit does not
+                   differentiate between block and raw disk semantics.
+                   diskarbitrationd(8) can automatically mount file systems
+                   which use these resources.
+
+     Path URL      This category covers a file system using a pre-existing
+                   volume as its data storage. Additionally, the newfs_fskit
+                   command shares path access privileges with the FSModule.
+                   An example resource of this kind is:
+                   file:///private/tmp/workdir
+
+     Generic URL   This category covers file systems using other connection
+                   technologies. The structure of these resources is that they
+                   are URLs following a scheme specific to the file system.
+
+SEE ALSO
+     diskarbitrationd(8), fsck_fskit(8)
+
+macOS 15                        April 14, 2025                        macOS 15

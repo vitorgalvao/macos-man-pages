@@ -1,0 +1,36 @@
+USDEXTRACT()                                                      USDEXTRACT()
+
+
+
+
+NAME
+       usdextract - Utility to extract files from .usdz, .glb, and .gltf files
+
+SYNOPSIS
+       usdextract [inputFiles]
+
+DESCRIPTION
+       usdextract is a utility that parses USDZ and GLB/GLTF files, and
+       extracts any documents or resources within them to a specified
+       directory.
+
+
+
+       -h, --help
+              Prints out a help message and exits
+
+
+       -o, --out [directory]
+              Extracts the file to the given directory.
+
+
+       --version
+              Display program version information and exits.
+
+
+EXAMPLES
+       usdextract input.usdz -o ./extracted
+              Extracts the files from within input.usdz to a directory named
+              "extracted".
+
+                                                                  USDEXTRACT()

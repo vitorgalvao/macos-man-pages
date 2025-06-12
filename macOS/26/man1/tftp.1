@@ -1,0 +1,157 @@
+TFTP(1)                     General Commands Manual                    TFTP(1)
+
+NAME
+     tftp – trivial file transfer program
+
+SYNOPSIS
+     tftp [host [port]]
+
+DESCRIPTION
+     The tftp utility is the user interface to the Internet TFTP (Trivial File
+     Transfer Protocol), which allows users to transfer files to and from a
+     remote machine.  The remote host may be specified on the command line, in
+     which case tftp uses host as the default host for future transfers (see
+     the connect command below).
+
+     The optional -e argument sets the blocksize to the largest supported
+     value and enables the TFTP timeout option as if the tout command had been
+     given.  In previous versions of tftp, it also enabled binary mode and the
+     TFTP blksize option; these are now on by default.
+
+COMMANDS
+     Once tftp is running, it issues the prompt “tftp>” and recognizes the
+     following commands:
+
+     ? command-name ...
+              Print help information.
+
+     ascii    Shorthand for "mode ascii"
+
+     binary   Shorthand for "mode binary"
+
+     blocksize [size]
+              Sets the TFTP blksize option in TFTP Read Request or Write
+              Request packets to [size] as specified in RFC 2348.  Valid
+              values are between 8 and 65464.  If no blocksize is specified,
+              then by default a blocksize of 512 bytes will be used.
+
+     blocksize2 [size]
+              Sets the TFTP blksize2 option in TFTP Read Request or Write
+              Request packets to [size].  Values are restricted to powers of 2
+              between 8 and 32768.  This is a non-standard TFTP option.
+
+     connect host [port]
+              Set the host (and optionally port) for transfers.  Note that the
+              TFTP protocol, unlike the FTP protocol, does not maintain
+              connections between transfers; thus, the connect command does
+              not actually create a connection, but merely remembers what host
+              is to be used for transfers.  You do not have to use the connect
+              command; the remote host can be specified as part of the get or
+              put commands.
+
+     debug level
+              Enable or disable debugging levels during verbose output.  The
+              value of level can be one of packet, simple, options, or access.
+
+     get [host:]file [localname]
+     get [host1:]file1 [host2:]file2 ... [hostN:]fileN
+              Get one or more files from the remote host.  When using the host
+              argument, the host will be used as default host for future
+              transfers.  If localname is specified, the file is stored
+              locally as localname, otherwise the original filename is used.
+              Note that it is not possible to download two files at a time,
+              only one, three, or more than three files, at a time.
+
+              To specify an IPv6 numeric address for a host, wrap it using
+              square brackets like “[3ffe:2900:e00c:ffee::1234]:file” to
+              disambiguate the colons used in the IPv6 address from the colon
+              separating the host and the filename.
+
+     mode transfer-mode
+              Set the mode for transfers; transfer-mode may be one of ascii or
+              binary.  The default is binary.
+
+     packetdrop [arg]
+              Randomly drop arg out of 100 packets during a transfer.  This is
+              a debugging feature.
+
+     put file [[host:]remotename]
+     put file1 file2 ... fileN [[host:]remote-directory]
+              Put a file or set of files to the remote host.  When remotename
+              is specified, the file is stored remotely as remotename,
+              otherwise the original filename is used.  If the
+              remote-directory argument is used, the remote host is assumed to
+              be a UNIX machine.  To specify an IPv6 numeric address for a
+              host, see the example under the get command.
+
+     options [arg]
+              Enable or disable support for TFTP options.  The valid values of
+              arg are on (enable RFC 2347 options), off (disable RFC 2347
+              options), and extra (toggle support for non-RFC defined
+              options).
+
+     quit     Exit tftp.  An end of file also exits.
+
+     rexmt retransmission-timeout
+              Set the per-packet retransmission timeout, in seconds.
+
+     rollover [arg]
+              Specify the rollover option in TFTP Read Request or Write
+              Request packets.  After 65535 packets have been transmitted, set
+              the block counter to arg.  Valid values of arg are 0 and 1.
+              This is a non-standard TFTP option.
+
+     status   Show current status.
+
+     timeout total-transmission-timeout
+              Set the total transmission timeout, in seconds.
+
+     trace    Toggle packet tracing.
+
+     verbose  Toggle verbose mode.
+
+     windowsize [size]
+              Sets the TFTP windowsize option in TFTP Read Request or Write
+              Request packets to [size] blocks as specified in RFC 7440.
+              Valid values are between 1 and 65535.  If no windowsize is
+              specified, then the default windowsize of 1 block will be used.
+
+SEE ALSO
+     tftpd(8)
+
+     The following RFC's are supported:
+
+     RFC 1350: The TFTP Protocol (Revision 2).
+
+     RFC 2347: TFTP Option Extension.
+
+     RFC 2348: TFTP Blocksize Option.
+
+     RFC 2349: TFTP Timeout Interval and Transfer Size Options.
+
+     RFC 3617: Uniform Resource Identifier (URI) Scheme and Applicability
+     Statement for the Trivial File Transfer Protocol (TFTP).
+
+     RFC 7440: TFTP Windowsize Option.
+
+     The non-standard rollover and blksize2 TFTP options are mentioned here:
+
+     Extending TFTP, https://www.compuphase.com/tftp.htm.
+
+HISTORY
+     The tftp command appeared in 4.3BSD.
+
+     Edwin Groothuis <edwin@FreeBSD.org> performed a major rewrite of the
+     tftpd(8) and tftp code to support RFC2348.
+
+NOTES
+     Because there is no user-login or validation within the TFTP protocol,
+     the remote site will probably have some sort of file-access restrictions
+     in place.  The exact methods are specific to each site and therefore
+     difficult to document here.
+
+     Files larger than 33488896 octets (65535 blocks) cannot be transferred
+     without client and server supporting the TFTP blocksize option (RFC2348),
+     or the non-standard TFTP rollover option.
+
+macOS 26.0                     November 16, 2022                    macOS 26.0

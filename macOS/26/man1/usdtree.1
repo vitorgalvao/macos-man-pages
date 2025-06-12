@@ -1,0 +1,74 @@
+USDTREE()                                                            USDTREE()
+
+
+
+
+NAME
+       usdtree - Utility to display the structure of the USD file as a tree in
+       the terminal.
+
+SYNOPSIS
+       usdtree [inputFiles]
+
+DESCRIPTION
+       usdtree traverses the hierarchy in a given USD stage or layer, and
+       displays the structure.
+
+       The default mode inspects the single USD file provided.  Use the
+       --flatten argument to see the flattened composed Stage tree instead.
+
+       Special metadata like kind and active are always shown if authored
+       unless --simple is provided.
+
+
+
+       -h, --help
+              Prints out a help message and exits.
+
+
+       --unloaded
+              Payloads are not loaded when this is specified.
+
+
+       -a, --attributes
+              Display authored attributes.
+
+
+       -m, --metadata
+              Display authored metadata.  Active and Kind are part of the
+              label and not shown as individual items.
+
+
+       -s, --simple
+              Only display prim names: no specifier, kind or active state.
+
+
+       -f, --flatten
+              Compose the stage with the input file as the root layer and
+              write the flattened content.
+
+
+       --flattenLayerStack
+              Flatten the layer stack with the given root layer. Unlike
+              --flatten, this does not flatten composition arcs (such as
+              references).
+
+
+       --mask [PRIMPATHS]
+              Limit stage population to these prims, their descendants and
+              ancestors. To specify multiple paths, either use commas with no
+              spaces, or quote the argument and separate paths by commas
+              and/or spaces. Requires --flatten.
+
+
+       --version
+              Display program version information and exits.
+
+
+
+EXAMPLES
+       usdtree input.usdz --attributes --metadata --flatten
+              Displays the structure of the flattened input USDZ, including
+              all attributes and metadata.
+
+                                                                     USDTREE()

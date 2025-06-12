@@ -1,0 +1,21 @@
+usbnotificationagent(8)     System Manager's Manual    usbnotificationagent(8)
+
+NAME
+     usbnotificationagent – Agent to detect accessory issues and present a
+     notification to the active user
+
+DESCRIPTION
+     Use launchctl(1) to control usbnotificationagent
+
+PREFERENCES
+     To reset suppressed notifications use defaults(1) to modify the
+     com.apple.usbnotificationagent domain.
+
+FILES
+     /System/Library/LaunchAgents/com.apple.usbnotificationagent.plist
+     /System/Library/Sandbox/Profiles/com.apple.usbnotificationagent.sb
+
+SEE ALSO
+     launchd(1) launchctl(1) defaults(1)
+
+Darwin                             7/24/2024                            Darwin

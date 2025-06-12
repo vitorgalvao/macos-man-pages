@@ -1,0 +1,27 @@
+IPCONFIGURATIONHELPER(8)    System Manager's Manual   IPCONFIGURATIONHELPER(8)
+
+NAME
+     IPConfigurationHelper – parsing helper for configd
+
+SYNOPSIS
+     takes no arguments, and users should not launch it manually.
+
+DESCRIPTION
+     IPConfigurationHelper is a an XPCService that launches on-demand upon
+     request from the IPConfiguration agent of the configd daemon.
+
+     The IPConfiguration agent runs as the root user inside of configd,
+     whereas IPConfigurationHelper doesn't run as a privileged user.  It
+     handles the downloading and/or parsing of system configuration data
+     acquired from the network.
+
+     See the configd man page for more information on what IPConfiguration
+     does.
+
+SEE ALSO
+     configd(8)
+
+HISTORY
+     IPConfigurationHelper first appeared in macOS 15.0.
+
+Mac OS X                       January 24, 2024                       Mac OS X

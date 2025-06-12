@@ -1,0 +1,107 @@
+USDCAT()                                                              USDCAT()
+
+
+
+
+NAME
+       usdcat - Write usd file(s) either as text to stdout or to a specified
+       output file.
+
+SYNOPSIS
+       usdcat [inputFiles]
+
+DESCRIPTION
+       usdcat is a utility that is used to convert the contents of input files
+       to other supported formats, or display them as text to stdout.
+
+
+       -h, --help
+              Prints out a help message and exits
+
+
+       -o, --output
+              Write a single input file to this output file instead of stdout.
+
+
+       --usdFormat [usda | usdc]
+              Use this underlying file format for output files with the
+              extension 'usd'. For example, passing output.usd as a text file.
+              The USD_DEFAULT_FILE_FORMAT environment variable is another way
+              to achieve this.
+
+
+       -l, --loadOnly
+              Attempt to load the specified input files and report 'OK' or
+              'ERR' for each one. After all files are processed, this script
+              will exit with a non-zero exit code if any files failed to load.
+
+
+       -f, --flatten
+              Compose stages with the input files as root layers
+
+
+       --flattenLayerStack
+              Flatten the layer stack with the given root layer, and write out
+              the results. Unlike --flatten, this does not flatten composition
+              arcs (such as references).
+
+
+       --skipSourceFileComment
+              If --flatten is specified, skip adding a comment regarding the
+              source of the flattened layer in the documentation field of the
+              output layer.
+
+
+       --mask [PRIMPATH...]
+              Limit stage population to these prims, their descendants and
+              ancestors. To specify multiple paths, either use commas with no
+              spaces, or quote the argument and separate paths by commas
+              and/or spaces. Requires --flatten.
+
+
+       --layerMetadata
+              Load only layer metadata in the USD file.  This option cannot be
+              combined with either --flatten or --flattenLayerStack.
+
+
+       --version
+              Display program version information and exit.
+
+
+NOTES
+       The multi-file input to usdcat does not perform any kind of merge of
+       the content in the separate
+              files (and there is no such utility to do so,yet… parameterizing
+              that problem is an interesting challenge!); it simply dumps the
+              contents of each file, sequentially.
+
+
+       The --flatten option uses the stage Export , which, as one might
+       expect,
+              “bakes in” the effects of all composition operators,
+              simultaneously removing the operators themselves, in the result;
+              this applies both to namespace operators like references,
+              sublayers, and variants, and also to value-resolution operators
+              like layer and reference time offsets.  Flattening a stage does
+              preserve USD native instancing by flattening each prototype into
+              the generated layer and adding references on each instance to
+              its corresponding prototype.  Thus, the exported data may appear
+              structurally different than in the participating source files,
+              but should evaluate/compute identically to that of the source
+              files.
+
+
+EXAMPLES
+       usdcat input.usd
+              Displays the contents of input.usd as a USDA representation.
+
+
+       usdcat input.usd --flatten
+              Displays the contents of input.usd as a USDA representation.
+              All composition is flattened.
+
+
+       usdcat input.usda -o output.usdc
+              Converts input.usda to output.usdc.
+
+                                                                      USDCAT()

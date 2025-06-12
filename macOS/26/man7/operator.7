@@ -1,0 +1,28 @@
+OPERATOR(7)            Miscellaneous Information Manual            OPERATOR(7)
+
+NAME
+     operator – C operator precedence and order of evaluation
+
+DESCRIPTION
+           Operator                        Associativity
+           --------                        -------------
+           () [] ->.                       left to right
+           ! ~ ++ -- + - (type) * & sizeof right to left
+           * / %                           left to right
+           + -                             left to right
+           << >>                           left to right
+           < <= > >=                       left to right
+           == !=                           left to right
+           &                               left to right
+           ^                               left to right
+           |                               left to right
+           &&                              left to right
+           ||                              left to right
+           ?:                              right to left
+           = += -= etc.                    right to left
+           ,                               left to right
+
+FILES
+     /usr/share/misc/operator
+
+macOS 26.0                      March 11, 2025                      macOS 26.0

@@ -1,0 +1,49 @@
+AUDIT_WARN(5)                 File Formats Manual                AUDIT_WARN(5)
+
+NAME
+     audit_warn – alert when audit daemon issues warnings
+
+DEPRECATION NOTICE
+     The audit(4) subsystem has been deprecated since macOS 11.0, disabled
+     since macOS 14.0, and WILL BE REMOVED in a future version of macOS.
+     Applications that require a security event stream should use the
+     EndpointSecurity(7) API instead.
+
+     On this version of macOS, you can re-enable audit(4) by renaming or
+     copying /etc/security/audit_control.example to
+     /etc/security/audit_control, re-enabling the system/com.apple.auditd
+     service by running launchctl enable system/com.apple.auditd as root, and
+     rebooting.
+
+DESCRIPTION
+     The audit_warn script runs when auditd(8) generates warning messages.
+
+     The default audit_warn is a script whose first parameter is the type of
+     warning; the script appends its arguments to
+     /etc/security/audit_messages.  Administrators may replace this script: a
+     more comprehensive one would take different actions based on the type of
+     warning.  For example, a low-space warning could result in an email
+     message being sent to the administrator.
+
+FILES
+     /etc/security/audit_warn
+     /etc/security/audit_messages
+
+SEE ALSO
+     audit(4), auditd(8)
+
+HISTORY
+     The OpenBSM implementation was created by McAfee Research, the security
+     division of McAfee Inc., under contract to Apple Computer Inc. in 2004.
+     It was subsequently adopted by the TrustedBSD Project as the foundation
+     for the OpenBSM distribution.
+
+AUTHORS
+     This software was created by McAfee Research, the security research
+     division of McAfee, Inc., under contract to Apple Computer Inc.
+     Additional authors include Wayne Salamon, Robert Watson, and SPARTA Inc.
+
+     The Basic Security Module (BSM) interface to audit records and audit
+     event stream format were defined by Sun Microsystems.
+
+macOS 26.0                      March 17, 2004                      macOS 26.0

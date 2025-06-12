@@ -1,0 +1,33 @@
+TRASH(8)                    System Manager's Manual                   TRASH(8)
+
+NAME
+     trash – Moves files and directories to the user trash folder
+
+SYNOPSIS
+     trash [-h] [--help] [-s] [-stopOnError] [-v] [--verbose] FILE [FILE...]
+
+DESCRIPTION
+     The trash moves files and directories into the user trash folder.  The
+     options are as follows:
+
+     -h | --help
+                display usage information for the tool and exit
+
+     -v | --verbose
+                display more verbose status
+
+     -s | --stopOnError
+                exit with an error if any move to a trash folder fails
+
+EXAMPLES
+     In a directory with a file named "Foo.txt" and a directory "Bar",
+
+     trash Foo.txt Bar
+
+     moves the file and directory into the user's trash folder, if it exists
+     and permissions allow the items to be moved into the user's trash folder.
+
+HISTORY
+     First appeared in macOS 15.0
+
+macOS                             May 4, 2023                            macOS

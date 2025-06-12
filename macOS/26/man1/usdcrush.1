@@ -1,0 +1,59 @@
+USDCRUSH()                                                          USDCRUSH()
+
+
+
+
+NAME
+       usdcrush - Utility for reducing the size of a source USD.
+
+SYNOPSIS
+       usdcrush [inputFile] -o [output]
+
+DESCRIPTION
+       usdcrush is a utility that uses various compression techniques to
+       reduce the file size of an input USD.
+
+
+
+       -h, --help
+              Prints out a help message and exits.
+
+
+       -o, --out
+              The output file to write to. This is required.
+
+
+       -c, --compatibility [widest | latest]
+              Controls how compatible the output file is with different
+              platforms and OpenUSD versions.  Widest will provide reduced
+              compression options, but will work in more scenarios.  Latest
+              will use more compression techniques, but may only work with
+              certain platforms and OpenUSD versions.  Latest is the default
+              option.
+
+
+       -t, --textureQuality [0-100]
+              A value that acts as a hint to texture compressors.
+
+
+
+       --version
+              Display program version information and exits.
+
+
+Compatibility Modes
+       Widest This compatibility mode will use JPEG compression on textures it
+              has assesed it can reduce.
+
+              Latest This compatibility mode will use AVIF compression on
+              textures it has assesed it can reduce.
+
+
+
+EXAMPLES
+       usdcrush input.usdz -o output.usdz
+              Analyzes input.usdz, and exports a compressed version as
+              output.usdz.
+
+
+                                                                    USDCRUSH()

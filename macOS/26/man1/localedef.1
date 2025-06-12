@@ -1,0 +1,176 @@
+LOCALEDEF(1)                General Commands Manual               LOCALEDEF(1)
+
+NAME
+     localedef – define locale environment
+
+SYNOPSIS
+     localedef [-bcDlUv] [-f charmap] [-i sourcefile] [-u codeset]
+               [-w widthfile] localename
+
+DESCRIPTION
+     The localedef utility converts source definitions for locale categories
+     into a format usable by the functions and utilities whose operational
+     behavior is determined by the setting of the locale environment
+     variables; see environ(7).
+
+     The utility reads source definitions for one or more locale categories
+     belonging to the same locale from the file named in the -i option (if
+     specified) or from standard input.
+
+     Each category source definition is identified by the corresponding
+     environment variable name and terminated by an END category-name
+     statement.  The following categories are supported:
+
+     LC_CTYPE         Defines character classification and case conversion.
+
+     LC_COLLATE       Defines collation rules.
+
+     LC_MONETARY      Defines the format and symbols used in formatting of
+                      monetary information.
+
+     LC_NUMERIC       Defines the decimal delimiter, grouping and grouping
+                      symbol for non-monetary numeric editing.
+
+     LC_TIME          Defines the format and content of date and time
+                      information.
+
+     LC_MESSAGES      Defines the format and values of affirmative and
+                      negative responses.
+
+     The following options are supported:
+
+     -b      Use big-endian byte order for output.
+
+     -c      Creates permanent output even if warning messages have been
+             issued.
+
+     -D      BSD-style output.  Rather than the default of creating the
+             localename directory and creating files like LC_CTYPE,
+             LC_COLLATE, etc. in that directory, the output file names have
+             the format “<localename>.<category>” and are dumped to the
+             current directory.
+
+     -f charmap
+             Specifies the pathname of a file containing a mapping of
+             character symbols and collating element symbols to actual
+             character encodings.  This option must be specified if symbolic
+             names (other than collating symbols defined in a collating-symbol
+             keyword) are used.  If the -f option is not present, the default
+             character mapping will be used.
+
+     -i sourcefile
+             The path name of a file containing the source definitions.  If
+             this option is not present, source definitions will be read from
+             standard input.
+
+     -l      Use little-endian byte order for output.
+
+     -u codeset
+             Specifies the name of a codeset used as the target mapping of
+             character symbols and collating element symbols whose encoding
+             values are defined in terms of the ISO/IEC 10646-1:2000 standard
+             position constant values.  See NOTES.
+
+     -U      Ignore the presence of character symbols that have no matching
+             character definition.  This facilitates the use of a common
+             locale definition file to be used across multiple encodings, even
+             when some symbols are not present in a given encoding.
+
+     -v      Emit verbose debugging output on standard output.
+
+     -w widthfile
+             The path name of the file containing character screen width
+             definitions.  If not supplied, then default screen widths will be
+             assumed, which will generally not account for East Asian
+             encodings requiring more than a single character cell to display,
+             nor for combining or accent marks that occupy no additional
+             screen width.
+
+     -V version
+             Specifies a version string describing the version of the locale
+             definition.  This string can be retrieved with querylocale(3),
+             and is intended to allow applications to detect locale definition
+             changes.  Currently it is stored only for the LC_COLLATE
+             category.
+
+     The following operands are required:
+
+     localename      Identifies the locale.  If the name contains one or more
+                     slash characters, localename will be interpreted as a
+                     path name where the created locale definitions will be
+                     stored.  This capability may be restricted to users with
+                     appropriate privileges.  (As a consequence of specifying
+                     one localename, although several categories can be
+                     processed in one execution, only categories belonging to
+                     the same locale can be processed.)
+
+OUTPUT
+     localedef creates a directory of files that represents the locale's data,
+     unless instructed otherwise by the -D ( BSD output) option.  The contants
+     of this directory should generally be copied into the appropriate
+     subdirectory of /usr/share/locale in order the definitions to be visible
+     to programs linked with libc.
+
+ENVIRONMENT
+     See environ(7) for definitions of the following environment variables
+     that affect the execution of localedef: LANG, LC_ALL, LC_COLLATE,
+     LC_CTYPE, LC_MESSAGES, LC_MONETARY, LC_MUMERIC, LC_TIME, and NLSPATH.
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0   No errors occurred and the locales were successfully created.
+
+     1   Warnings occurred and the locales were successfully created.
+
+     2   The locale specification exceeded implementation limits or the coded
+         character set or sets used were not supported by the implementation,
+         and no locale was created.
+
+     >3  Warnings or errors occurred and no output was created.
+
+     If an error is detected, no permanent output will be created.
+
+SEE ALSO
+     locale(1), iconv_open(3), nl_langinfo(3), querylocale(3), strftime(3),
+     environ(7)
+
+WARNINGS
+     If warnings occur, permanent output will be created if the -c option was
+     specified.  The following conditions will cause warning messages to be
+     issued:
+
+     •   If a symbolic name not found in the charmap file is used for the
+         descriptions of the LC_CTYPE or LC_COLLATE categories (for other
+         categories, this will be an error condition).
+
+     •   If optional keywords not supported by the implementation are present
+         in the source.
+
+NOTES
+     When the -u option is used, the codeset option-argument is interpreted as
+     a name of a codeset to which the ISO/IEC 10646-1:2000 standard position
+     constant values are converted.  Both the ISO/IEC 10646-1:2000 standard
+     position constant values and other formats (decimal, hexadecimal, or
+     octal) are valid as encoding values within the charmap file.  The codeset
+     can be any codeset that is supported by the iconv_open(3) function.
+
+     When conflicts occur between the charmap specification of codeset,
+     mb_cur_max, or mb_cur_min and the corresponding value for the codeset
+     represented by the -u option-argument codeset, the localedef utility
+     fails with an error.
+
+     When conflicts occur between the charmap encoding values specified for
+     symbolic names of characters of the portable character set and the
+     character encoding values defined by the US-ASCII, the result is
+     unspecified.
+
+HISTORY
+     localedef first appeared in FreeBSD 11.
+
+     It was written by Garrett D'Amore <garrett@nexenta.com> for illumos.
+     John Marino <draco@marino.st> provided the alternations necessary to
+     compile cleanly on DragonFly.  Baptiste Daroussin <bapt@FreeBSD.org>
+     ported it to FreeBSD and converted it to tree(3).
+
+macOS 26.0                       June 29, 2023                      macOS 26.0

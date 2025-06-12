@@ -1,0 +1,22 @@
+managedeventsd(8)           System Manager's Manual          managedeventsd(8)
+
+NAME
+     managedeventsd – Device Management Endpoint Security client daemon
+
+SYNOPSIS
+     managedeventsd
+
+DESCRIPTION
+     managedeventsd monitors disk mount events and responds to mount
+     authentication requests via Endpoint Security API. It will make decisions
+     based on the disk restriction policies from the Remote Management server.
+
+FILES
+     /System/Library/LaunchDaemons/com.apple.devicemanagementclient.managedeventsd.plist
+
+DIAGNOSTICS
+     Logging can be viewed via: log stream --predicate
+     'process="managedeventsd"'
+
+
+macOS                          January 11, 2024                          macOS

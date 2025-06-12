@@ -1,0 +1,21 @@
+transparencyd(8)            System Manager's Manual           transparencyd(8)
+
+NAME
+     transparencyd – The transparency daemon.
+
+DESCRIPTION
+     transparencyd is a system daemon that verifies transparency information
+     for identityservicesd and it's clients, like Messages.app.
+
+     The “transparency” part of the name comes from the fact that there is a
+     publicly auditable, verifiable, log-backed map data structure to ensure
+     consistency of IDS/iMessage public keys.  the daemon performs automatic
+     verification as part of the key transparency feature
+
+     transparencyd is not intended to be invoked directly, but launchd though
+     launchd.
+
+SEE ALSO
+     swtransparencyd(8) launchd(8) launchd.conf(5)
+
+Darwin                            7 Jan, 2025                           Darwin

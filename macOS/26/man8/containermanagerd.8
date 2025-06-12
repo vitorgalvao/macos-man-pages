@@ -1,0 +1,44 @@
+containermanagerd(8)        System Manager's Manual       containermanagerd(8)
+
+NAME
+     containermanagerd – Application and plug-in containerization management
+     daemon
+
+SYNOPSIS
+     containermanagerd
+
+DESCRIPTION
+     containermanagerd creates, destroys, and otherwise manages containers for
+     applications and their respective plug-ins and works in concert with
+     sandbox(7) and secinitd(8) to provide application containerization.  It
+     is a classic launch daemon and/or agent managed by launchd(8).
+
+     Users should not run containermanagerd manually and changing arguments is
+     unsupported.
+
+FILES
+     •   /System/Library/LaunchDaemons/com.apple.containermanagerd.plist
+
+     •   /System/Library/LaunchAgents/com.apple.containermanagerd.plist
+
+     •   /usr/libexec/containermanagerd
+
+     •   ~/Library/ContainerManager
+
+     •   ~/Library/Caches/com.apple.containermanagerd
+
+     •   ~/Library/Containers
+
+     •   ~/Library/Daemon Containers
+
+     •   ~/Library/GroupContainersAlias
+
+     •   ~/Library/Group Containers
+
+SEE ALSO
+     launchd(8), secinitd(8)
+
+HISTORY
+     containermanagerd was first introduced in macOS 11.
+
+Darwin                          March 20, 2023                          Darwin

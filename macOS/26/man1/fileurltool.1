@@ -1,0 +1,71 @@
+FILEURLTOOL(1)              General Commands Manual             FILEURLTOOL(1)
+
+NAME
+     fileurltool – a tool to exercise the NSURL/CFURL resource property APIs
+
+SYNOPSIS
+     fileurltool [-by-path] [-by-ref] [-cf1] [-cfm] [-ns1] [-nsm]
+                 [-print-type] [-print-cache] [-leaks] [get URL KEY ...]
+                 [set URL KEY=VALUE] [check URL] [getflags URL]
+                 [getvolflags URL] [keys]
+
+DESCRIPTION
+     fileurltool exercises the NSURL getResourceValue:forKey:error: and
+     CFURLCopyResourcePropertyForKey() APIs on given file: scheme URLs.
+
+     This tool accepts of the commands get set check getflags getvolflags keys
+     each of which has certain options.
+
+     get URL KEY ...
+              Get the resource properties with the constant names KEY as
+              described below, for the given URL as described and display each
+              value.  If no file ... KEY is provided, then print out most of
+              the known values for the item.
+
+     set URL KEY=VALUE
+              Set the resource properties for the KEY to the value VALUE where
+              VALUE is a format appropriate for the type of data for the KEY
+              on the given URL
+
+     check URL
+              Check if the given URL is reachable and print the result.
+
+     getflags URL
+              Get the resource property flags for the given URL and display
+              them.
+
+     getvolflags URL
+              Get the resource volume property flags for the given URL and
+              display them.
+
+     The values for KEY can be the same as the constant string in the
+     appropriate API, either the CF or NS varients, or it can be a string
+     containing letters, digits, "_" or ".", which will be treated as if it
+     was the value of a constant in the API.
+
+     Examples of valid keys include NSURLNameKey, NSURLCreationDateKey.
+
+     The values for VALUE depend on the data type asssociated with the value
+     in the API.  If the data type is a string, then the string is just used;
+     if it is a boolean then 1 or YES or 0 or NO are appropriate.  If the type
+     is a number,
+
+     A list of flags and their descriptions:
+
+     -by-path    Create a file-path URL which uses the file path string
+
+     -by-ref     Create a file-reference URL before calling the API
+
+     -cf1        Use.Fn CFURLCopyResourcePropertyForKey /
+                 CFURLSetResourcePropertyForKey() API
+
+     -cfm        Use CFURLCopyResourcePropertiesForKeys() /
+                 CFURLSetResourcePropertiesForKeys() API
+
+     -ns1        Use NSURL's  getResourceValue:forKey:error: and
+                 setResourceValue:forKey:error: API
+
+     -nsm        Use NSURL's resourceValuesForKeys:error: and
+                 setResourceValues:error: API
+
+Darwin                           June 1, 2024                           Darwin
