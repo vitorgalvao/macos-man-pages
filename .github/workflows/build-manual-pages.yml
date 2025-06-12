@@ -21,11 +21,12 @@ jobs:
 
         for mandir in '/usr/share/man/'*
         do
+          savedir="${osdir}/$(/usr/bin/basename "${mandir}")"
+          /bin/mkdir -p "${savedir}"
+
           for manual in "${mandir}"/*
           do
-            savedir="${osdir}/$(/usr/bin/basename "${mandir}")"
             /usr/bin/printf 'Exporting %s...\n' "${manual}" >&2
-            /bin/mkdir -p "${savedir}"
             /usr/bin/mandoc -T utf8 "${manual}" | /usr/bin/col -bx > "${savedir}/$(/usr/bin/basename "${manual}")"
           done
         done
