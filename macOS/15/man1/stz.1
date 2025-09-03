@@ -1,0 +1,49 @@
+STZ(1)                      General Commands Manual                     STZ(1)
+
+NAME
+     stz – Manipulate Streamable Archives
+
+SYNOPSIS
+     stz extract [[-hash-type hash-type] --hash-size hash-size-in-bytes
+         --hashes-file hashes-file] input-path output-path
+
+DESCRIPTION
+     This utility may be used to manipulate streamable archives.
+
+   EXTRACT COMMAND
+     The extract form extracts a streamable archive.  The hash arguments are
+     optional, but if used provide a convenient way to verify the integrity of
+     the archive during extraction.
+
+     --hash-type hash-type
+             Set the hash type for verification.  One of: MD5 SHA1 SHA224
+             SHA256 SHA384 SHA512
+
+             The default is SHA256.
+
+     --hash-size hash-size-in-bytes
+             Hash the archive's contents over each given byte-sized interval
+             and verify those hashes as the archive is streamed.
+
+             Disabled if 0 or not specified, otherwise requires --hashes-file.
+             Verify the entire file using a single hash if the string full is
+             given as the hash size.
+
+     --hashes-file hashes-file
+             Path to UTF8-encoded file containing the hashes, in order and one
+             line per hash value, of each chunk.
+
+     input-path
+             Path to streamable archive to extract.
+
+     output-path
+             Path of directory to create into which the contents of the
+             archive will be extracted.  The past must not already exist.
+
+EXIT STATUS
+     The stz utility exits 0 on success, and >0 if an error occurs.
+
+HISTORY
+     stz first appeared in macOS 15.5.
+
+macOS                            April 3, 2025                           macOS
