@@ -5,9 +5,9 @@ NAME
      SSO extension.
 
 SYNOPSIS
-     app-sso [command]
+     app-sso [kerberos|platform] [command]
 
-             Commands:
+             Kerberos Commands (default mode):
                    -a, --authenticate REALM [options ...]
                          -u, --username USERNAME
                          -f, --force
@@ -24,16 +24,27 @@ SYNOPSIS
                    -j, --json REALM
                    -h, --help REALM
 
+             Platform SSO Commands:
+                   -m, --messages
+                   -s, --state
+
 
 DESCRIPTION
-     app-sso is used to control and get information about the Kerberos Single
-     Sign-on (SSO) extension via the command line. The Kerberos SSO extension
-     simplifies using Kerberos authentication with an Active Directory based
-     Kerberos realm. It also allows the user to use Active Directory specific
-     functions such as password changes and password expiration notifications.
+     app-sso is used to control and get information about both the Kerberos
+     Single Sign-on (SSO) extension and Platform SSO via the command line.
 
-     Note that app-sso cannot be used to completely configure the Kerberos SSO
-     extension. Configuring the Kerberos SSO extension requires a user
+     In Kerberos mode (default), the tool controls the Kerberos SSO extension
+     which simplifies using Kerberos authentication with an Active Directory
+     based Kerberos realm. It also allows the user to use Active Directory
+     specific functions such as password changes and password expiration
+     notifications.
+
+     In Platform SSO mode, the tool provides diagnostic information about the
+     current Platform SSO state and configuration, and can display sample
+     messages using the current configuration.
+
+     Note that app-sso cannot be used to completely configure either the
+     Kerberos SSO extension or Platform SSO.  Configuration requires a user
      approved MDM enrollment, as well as an MDM solution that can build and
      deliver an appropriately configured Extensible SSO configuration profile
      payload. See your MDM vendor's documentation for additional information.
@@ -103,12 +114,32 @@ COMMANDS
      -h, --help
               Print a synopsis of the above document.
 
+PLATFORM SSO COMMANDS
+     -m, --messages
+              Display sample messages using the current Platform SSO
+              configuration. This command is useful for testing and diagnostic
+              purposes to verify that Platform SSO is properly configured and
+              can generate authentication messages.
+
+     -s, --state
+              Display the current Platform SSO state and configuration. This
+              includes information about device configuration, login
+              configuration, user configuration, and SSO token status
+              including received and expiration dates. For diagnostic purposes
+              only, not intended for scripting.
+
 EXAMPLES
      Print infomation about the PRETENDCO.COM realm:
               app-sso -i PRETENDCO.COM
 
      Authenticate to the PRETENDCO.COM realm as jappleseed:
               app-sso -a PRETENDCO.COM -u jappleseed
+
+     Display Platform SSO state and configuration:
+              app-sso platform -s
+
+     Display Platform SSO test messages:
+              app-sso platform -m
 
 Kerberos Extension UI Options
      startInSmartCardMode

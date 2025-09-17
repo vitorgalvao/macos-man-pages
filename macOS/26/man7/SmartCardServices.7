@@ -87,6 +87,7 @@ CONFIGURATION FILE
 
      It may contain the following optional sections:
 
+
      UserSelectorPath
               This string value points to the custom UserSelector process
               which is used for associating users with SmartCards. If this
@@ -207,6 +208,23 @@ ATTRIBUTE MAPPING CONFIG EXAMPLE
      directory attribute - in this case, the dsAttrTypeNative:longName field.
      When a match is found, the corresponding user is considered associated
      with the SmartCard.
+
+OPENDIRECTORY CONFIGURATION
+     By default, SmartCard authentication using public key hash mapping
+     operates exclusively on local OpenDirectory nodes. This behavior ensures
+     that local user accounts are properly authenticated without potential
+     conflicts from network directory services. For attribute-based mapping,
+     both local and network nodes are queried.
+
+     To enable public key hash mapping to use network OpenDirectory nodes in
+     addition to local nodes, use:
+
+           sudo defaults write /Library/Preferences/com.apple.security.smartcard usePubkeyHashNetworkOd -bool YES
+
+     This setting might be useful in environments where SmartCards need to
+     authenticate against Active Directory or other directory services
+     directly with public key hash mapping rather than attribute mapping.
+
 
 OFFLINE SMARTCARD LOGIN VIA KERBEROS CACHING
      In environments where macOS clients may not always be able to reach
@@ -332,7 +350,7 @@ EXTENSIONS
      template. Refer to the developer documentation for further details.
      To enable the app extension and make the token available to the system
      for authentication, launch the sc_auth command line tool with value of
-     '‘com.apple.ctk.class-id’ from Info.plist:
+     ''com.apple.ctk.class-id' from Info.plist:
 
            sudo sc_auth enable_for_login -t  com.example.HostApp.TokenExtension
 

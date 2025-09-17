@@ -4,8 +4,8 @@ NAME
      vmmap – Display the virtual memory regions allocated in a process
 
 SYNOPSIS
-     vmmap [-s] [-w] [-v] [-pages] [-interleaved] [-submap] [-allSplitLibs]
-           [-noCoalesce] [-summary]
+     vmmap [-s] [-w] [-v] [-attributes] [-pages] [-interleaved] [-submap]
+           [-allSplitLibs] [-noCoalesce] [-summary]
            pid | partial-executable-name | memory-graph-file [address]
 
 DESCRIPTION
@@ -28,6 +28,9 @@ OPTIONS
      -w, -wide      Print wide output, to show full paths of mapped files.
 
      -v, -verbose   Equivalent to -w -submap -allSplitLibs -noCoalesce
+
+     -attributes    Display applied region attributes including JIT, TPRO, and
+                    additional attributes as supported.
 
      -pages         Print region sizes in page counts rather than bytes.
 

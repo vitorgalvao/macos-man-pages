@@ -970,9 +970,12 @@ RESET
        handler for, it resets.  This means that several things happen.
 
        First, any macros that are executing are stopped and popped off the
-       stack.  The behavior is not unlike that of exceptions in programming
-       languages.  Then the execution point is set so that any code waiting to
-       execute (after all macros returned) is skipped.
+       execution stack.  The behavior is not unlike that of exceptions in
+       programming languages.  Then the execution point is set so that any
+       code waiting to execute (after all macros returned) is skipped.
+
+       However, the stack of values is not cleared; in interactive mode, users
+       can inspect the stack and manipulate it.
 
        Thus, when dc(1) resets, it skips any remaining code waiting to be
        executed.  Then, if it is interactive mode, and the error was not a
@@ -1334,4 +1337,4 @@ BUGS
 AUTHOR
        Gavin D. Howard <gavin@gavinhoward.com> and contributors.
 
-Gavin D. Howard                  January 2024                            DC(1)
+Gavin D. Howard                   August 2024                            DC(1)

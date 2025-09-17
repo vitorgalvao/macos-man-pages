@@ -1371,14 +1371,14 @@ LIBRARY
               Functions subsection below).
 
        frand(p)
-              Generates a pseudo-random integer between 0 (inclusive) and 1
+              Generates a pseudo-random number between 0 (inclusive) and 1
               (exclusive) with the number of decimal digits after the decimal
               point equal to the truncated absolute value of p.  If p is not
               0, then calling this function will change the value of seed.  If
               p is 0, then 0 is returned, and seed is not changed.
 
        ifrand(i, p)
-              Generates a pseudo-random integer that is between 0 (inclusive)
+              Generates a pseudo-random number that is between 0 (inclusive)
               and the truncated absolute value of i (exclusive) with the
               number of decimal digits after the decimal point equal to the
               truncated absolute value of p.  If the absolute value of i is
@@ -1673,15 +1673,6 @@ LIBRARY
 
               If you want to a use signed two’s complement argument, use
               s2u(x) to convert.
-
-       bunrev(t)
-              Assumes t is a bitwise-reversed number with an extra set bit one
-              place more significant than the real most significant bit (which
-              was the least significant bit in the original number).  This
-              number is reversed and returned without the extra set bit.
-
-              This function is used to implement other bitwise functions; it
-              is not meant to be used by users, but it can be.
 
        plz(x) If x is not equal to 0 and greater that -1 and less than 1, it
               is printed with a leading zero, regardless of the use of the -z
@@ -2401,4 +2392,4 @@ BUGS
 AUTHORS
        Gavin D. Howard <gavin@gavinhoward.com> and contributors.
 
-Gavin D. Howard                  January 2024                            BC(1)
+Gavin D. Howard                   August 2024                            BC(1)

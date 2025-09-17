@@ -3364,6 +3364,10 @@ Filesystem configuration values
            available to free a "FILE" structure without closing the underlying
            file descriptor.  This function appeared in "FreeBSD" 10.2.
 
+       "HAS_FDOPENDIR"
+           This symbol, if defined, indicates that the fdopen routine is
+           available to open a directory descriptor.
+
        "HAS_FPATHCONF"
            This symbol, if defined, indicates that "pathconf()" is available
            to determine file-system related limits and options associated with
@@ -16553,4 +16557,4 @@ SEE ALSO
        config.h, perlapio, perlcall, perlclib, perlfilter, perlguts,
        perlintern, perlinterp, perliol, perlmroapi, perlreguts, perlxs
 
-perl v5.34.1                      2025-05-19                        PERLAPI(1)
+perl v5.34.1                      2025-08-03                        PERLAPI(1)
