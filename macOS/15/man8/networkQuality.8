@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
      networkQuality [-bdhksuv] [-B Bonjour name] [-C configuration URL]
                     [-c filename] [-f protocol selection] [-I interface]
-                    [-r host] [-S port]
+                    [-M max run time] [-r host] [-S port]
 
 DESCRIPTION
      networkQuality allows for measuring the different aspects of Network
@@ -52,6 +52,9 @@ DESCRIPTION
 
               If not specified, the default interface will be used.
 
+     -M max run time
+              Maximum runtime in seconds
+
      -r host  Connect to host or IP, overriding DNS for initial config request
 
      -S port  Create a networkQuality server-instance running locally on the
@@ -91,8 +94,8 @@ COMPUTER OUTPUT FIELD DESCRIPTION
 
                                  (only available when -s is specified).
 
-     dl_throughput               The measured downlink throughput (in bytes
-                                 per second).
+     dl_throughput               The measured downlink throughput (in bits per
+                                 second).
 
      end_date                    Time when test run was completed (in local
                                  time).
@@ -195,7 +198,7 @@ COMPUTER OUTPUT FIELD DESCRIPTION
 
                                  (only available when -s is specified).
 
-     ul_throughput               The measured uplink throughput (in bytes per
+     ul_throughput               The measured uplink throughput (in bits per
                                  second).
 
      error_code                  Error domain specific error code

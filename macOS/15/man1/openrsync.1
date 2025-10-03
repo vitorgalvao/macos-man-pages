@@ -17,14 +17,15 @@ SYNOPSIS
                [--files-from=filespec] [--force] [--ignore-errors]
                [--ignore-existing] [--ignore-non-existing] [--include pattern]
                [--include-from=file] [--inplace] [--keep-dirlinks]
-               [--link-dest=directory] [--list-only] [--max-delete=MAX]
-               [--max-size=size] [--min-size=size] [--modify-window=sec]
-               [--no-implied-dirs] [--no-motd] [--numeric-ids] [--partial]
-               [--partial-dir=DIR] [--password-file=pwfile] [--port=service]
-               [--progress=VER] [--protocol] [--read-batch=file]
-               [--remove-source-files] [--rsync-path=program] [--safe-links]
-               [--size-only] [--sockopts=sockopts] [--specials] [--stats]
-               [--suffix=suffix] [--super] [--timeout=seconds]
+               [--link-dest=directory] [--list-only] [--log-file=file]
+               [--log-file-format=format] [--max-delete=MAX] [--max-size=size]
+               [--min-size=size] [--modify-window=sec] [--no-implied-dirs]
+               [--no-motd] [--numeric-ids] [--partial] [--partial-dir=DIR]
+               [--password-file=pwfile] [--port=service] [--progress=VER]
+               [--protocol] [--read-batch=file] [--remove-source-files]
+               [--rsync-path=program] [--safe-links] [--size-only]
+               [--sockopts=sockopts] [--specials] [--stats] [--suffix=suffix]
+               [--super] [--timeout=seconds]
                [--only-write-batch=file | --write-batch=file] source ...
                directory
 
@@ -245,12 +246,12 @@ DESCRIPTION
      --exclude-from=file
              Load patterns and rules from file.
 
-     --extended-attributes
+     -E, --extended-attributes
              Apple specific option to copy extended attributes, resource
              forks, and ACLs.  Requires at least Mac OS X 10.4 or suitably
              patched rsync.
 
-     -E, --executability
+     --executability
              Preserve the executability of regular files (i.e., a file is
              "executable" if at least one 'x' mode bit is enabled in its
              permissions).  If the source file is executable, then for each
@@ -374,6 +375,68 @@ DESCRIPTION
              Instead of transferring files, only list them.  This option is
              implied if there is only a single source argument and no
              destination argument.
+
+     --log-file=file
+             Specify a file to log to instead of stdout.  This implies a
+             --log-file-format of “%i %n%L” if none was previously specified.
+
+     --log-file-format=format
+             Specify a log format for each file involved in the transfer.  The
+             format argument may contain any number of tokens, like “%i”, with
+             special meaning.  The following tokens are defined for daemon
+             mode, but are also accepted for normal openrsync usage:
+
+             %a  The client's remote IP address.
+
+             %h  The client's hostname.
+
+             %m  The module requested by the client.
+
+             %P  The path to the module requested by the client.
+
+             %u  The username that the client has authenticated as.
+
+             These tokens are globally defined:
+
+             %b  The number of bytes transferred.
+
+             %B  The file mode, in a human-readable format.
+
+             %c  The size of block checksums received for the source file.
+                 This is not currently implemented by this implementation, but
+                 will be accepted.
+
+             %f  The long-form filename without a trailing “/” indicator.
+
+             %G  The group of the file in decimal format, or “DEFAULT” when
+                 the group is 0.
+
+             %I  The itemized list of updates including unchanged files, as if
+                 --itemize-changes was specified twice.
+
+             %i  The itemized list of updates, as if --itemize-changes was
+                 specified.
+
+             %l  The length of the file.
+
+             %L  An indicator of the file being a symlink or a hardlink.  For
+                 hardlinks, this token is replaced with “=> FILENAME”.  For
+                 symlinks, this token is replaced with “=> FILENAME”.  For
+                 non-links, this token is replaced with the empty string.
+
+             %M  The mtime of the file, in full date-time format.
+
+             %n  The short-form filename with a trailing “/” indicator.
+
+             %o  The operation conducted on the file.  This can be one of
+                 “send”, “recv”, or “del.”.
+
+             %p  The PID of the rsync client.
+
+             %t  The current time, in date-time format.
+
+             %U  The user of the file in decimal format, or “DEFAULT” when the
+                 user is 0.
 
      --max-delete MAX
              Once MAX files have been deleted, do not delete any more files.
@@ -838,4 +901,4 @@ HISTORY
 AUTHORS
      The openrsync utility was written by Kristaps Dzonsons <kristaps@bsd.lv>.
 
-macOS 15.5                     September 3, 2025                    macOS 15.5
+macOS 15.6                      October 3, 2025                     macOS 15.6

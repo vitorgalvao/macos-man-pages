@@ -15,10 +15,12 @@ DESCRIPTION
      for the specified processes or memory graph files.
 
      footprint will display all addressable memory used by the specified
-     processes, but it emphasizes memory considered 'dirty' by the kernel for
-     purposes of accounting.  If multiple processes are specified, footprint
-     will de-duplicate multiply mapped objects and will display shared objects
-     separately from private ones.
+     processes, but it emphasizes memory considered "dirty" by the kernel for
+     purposes of accounting. If multiple processes are specified, footprint
+     will de-duplicate multiply-mapped objects and will display shared objects
+     separately from private ones. It will also print a summary of total de-
+     duplicated footprint. Currently, footprint does not de-duplicate wired
+     memory shared between kernel_task and user space processes.
 
      footprint must be run as root when inspecting processes that are not
      owned by the current user.
@@ -29,7 +31,7 @@ DESCRIPTION
 
 OPTIONS
      -a, --all
-             target all processes (will take much longer)
+             target all processes and report system-level auxiliary data
 
      -j, --json path
              also save a JSON representation of the data to the specified path
@@ -87,14 +89,15 @@ OPTIONS
              show wired memory column
 
      --vmObjectDirty
-             interpret dirty memory as viewed by VM objects in the kernel,
-             rather than the default behavior which interprets dirty memory
-             through the pmap. This mode may calculate a total footprint that
-             does not match what is shown in other tools such as top(1) or
-             Activity Monitor.app. However, it can provide insight into dirty
-             memory that is by design not included in the default mode, such
-             as dirty file-backed memory or a VM region mapped into a process
-             that is normally accounted to only the process that created it.
+             interpret dirty memory as viewed by Virtual Memory subssytem (VM)
+             objects in the kernel, rather than the default behavior which
+             interprets dirty memory through the pmap. This mode may calculate
+             a total footprint that does not match what is shown in other
+             tools such as top(1) or Activity Monitor.app. However, it can
+             provide insight into dirty memory that is by design not included
+             in the default mode, such as dirty file-backed memory or a VM
+             region mapped into a process that is normally accounted to only
+             the process that created it.
              The --vmObjectDirty mode was the default in versions prior to
              macOS 10.15.
 
@@ -176,49 +179,38 @@ INVESTIGATING MEMORY FOOTPRINT
      Lastly, avoid using "Wired" memory as much as possible since it cannot be
      paged out or reclaimed.
 
-     Malloc memory
-             Memory allocated by malloc(3) is one of the most common forms of
-             memory, making up what is usually referred to as the 'heap'. This
-             memory will have a category prefixed with 'MALLOC_'.  malloc(3)
-             allocates VM regions on a process's behalf; the contents of those
-             regions will be the individual allocations representing objects
-             and data in a process. Refer to the heap(1) tool to further
-             categorize the objects contained within a malloc memory region,
-             or leaks(1) to detect a subset of heap memory that is no longer
-             reachable.
+   Memory Categories
+     malloc(3) memory
+     Memory allocated by malloc(3) is one of the most common forms of memory,
+     making up what is usually referred to as the 'heap'. This memory will
+     have a category prefixed with 'MALLOC_'.  malloc(3) allocates VM regions
+     on a process's behalf; the contents of those regions will be the
+     individual allocations representing objects and data in a process. Refer
+     to the heap(1) tool to further categorize the objects contained within a
+     malloc memory region, or leaks(1) to detect a subset of heap memory that
+     is no longer reachable.
 
      Binary segments
-             Loaded binaries will be visible as an entry with both the segment
-             type and the path to the binary, most often __TEXT, __DATA, or
-             __LINKEDIT segments. Non-shared cache binaries and pages in the
-             __DATA segment (such as those that contain modified global
-             variables) can often have dirty memory.
+     Loaded binaries will be visible as an entry with both the segment type
+     and the path to the binary, most often __TEXT, __DATA, or __LINKEDIT
+     segments. Non-shared cache binaries and pages in the __DATA segment (such
+     as those that contain modified global variables) can often have dirty
+     memory.
 
      Mapped files
-             File-backed memory allocated using mmap(2) will show up as
-             'mapped file' along with the path to the file.
+     File-backed memory allocated using mmap(2) will show up as 'mapped file'
+     along with the path to the file.
 
      VM allocations
-             Most other types of memory can be tagged with a name that
-             indicates what subsystem allocated the region (see mmap(2) for
-             more information). For instance, Foundation.framework may
-             allocate memory and tag it with VM_MEMORY_FOUNDATION, which
-             appears in footprint's output as 'Foundation'. Processes are able
-             to allocate memory with their own tags by using an appropriate
-             tag in the range
-             VM_MEMORY_APPLICATION_SPECIFIC_1-VM_MEMORY_APPLICATION_SPECIFIC_16.
-             Memory which does not fall into one of the previous categories
-             and has not been explicitly tagged will be marked 'untagged
-             (VM_ALLOCATE)'.
-
-     Kernel memory
-             In the special case of analyzing kernel_task, footprint's output
-             and categories will mirror much of the data also available via
-             zprint(1).  This is memory allocated by the kernel or a kernel
-             extension and is generally unavailable to userspace directly.
-             Despite the restricted access, userspace programs often influence
-             when and how much memory the kernel allocates (e.g., for
-             resources allocated on behalf of a user process).
+     Most other types of memory can be tagged with a name that indicates what
+     subsystem allocated the region (see mmap(2) for more information). For
+     instance, Foundation.framework may allocate memory and tag it with
+     VM_MEMORY_FOUNDATION, which appears in footprint's output as
+     'Foundation'. Processes are able to allocate memory with their own tags
+     by using an appropriate tag in the range
+     VM_MEMORY_APPLICATION_SPECIFIC_1-VM_MEMORY_APPLICATION_SPECIFIC_16.
+     Memory which does not fall into one of the previous categories and has
+     not been explicitly tagged will be marked 'untagged (VM_ALLOCATE)'.
 
      For malloc and VM allocated memory, details about when and where the
      memory was allocated can often be obtained by enabling MallocStackLogging
@@ -284,7 +276,43 @@ MEMORY ACCOUNTING
      category name such as 'IOKit (graphics)' or 'Owned physical footprint
      (unmapped) (media)'.
 
+   Kernel Memory
+     footprint approximates kernel_task memory by reporting system wired
+     memory broken down by kernel VM tag. This is the same approach taken by
+     zprint(1), except that footprint does not count "VM_KERN_MEMORY_MLOCK"
+     memory towards kernel_task's estimated footprint. Notably, footprint
+     ignores any unwired memory private to kernel_task.
+
+     When wired memory is "owned by" a user space process, footprint will also
+     report it as part of the footprint for that process. If footprint is
+     reporting on a user space process and kernel_task, any wired memory owned
+     by the user space process will be counted twice in the Summary. This
+     behavior means that ‘footprint -a’ double counts wired memory owned by
+     user space processes.
+
+AUXILIARY DATA
+     footprint reports the following "Auxiliary data" for processes:
+
+         phys_footprint - the current value of the kernel ledger tracking the
+         amount of dirty memory owned by a process
+
+         phys_footprint_peak - the maximum value of phys_footprint over a
+         process's lifetime
+
+     ‘footprint -a’ reports the following "System auxiliary data:"
+
+         boot_carveout - the amount of memory allocated by the booter prior to
+         kernel startup
+
+         sys_wired - total system wired memory
+
+         sys_unwired - remaining "Dirty" memory
+
+         sys_footprint - total of the above. Because of the way footprint
+         estimates kernel_task footprint, this measurement generally differs
+         from the Summary TOTAL footprint reported by footprint -a.
+
 SEE ALSO
-     vmmap(1), heap(1), leaks(1), malloc_history(1), zprint(1)
+     vmmap(1), heap(1), leaks(1), malloc_history(1), vm_stat(1), zprint(1)
 
 OS X                            April 15, 2022                            OS X
