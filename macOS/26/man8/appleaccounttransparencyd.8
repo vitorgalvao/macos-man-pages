@@ -1,0 +1,21 @@
+APPLEACCOUNTTRANSPARENCYD(8)                           System Manager's Manual
+
+NAME
+     appleaccounttransparencyd – Apple Account daemon
+
+SYNOPSIS
+     appleaccounttransparencyd
+
+DESCRIPTION
+     The appleaccounttransparencyd daemon provides Apple Account services and
+     serves XPC clients via the com.apple.appleaccount.transparency Mach
+     service.
+
+     appleaccounttransparencyd is launched on-demand by launchd(8).  It must
+     not be invoked directly by users or processes; all interaction must occur
+     through the designated XPC service name.
+
+SEE ALSO
+     appleaccountd(8), launchd(8), launchd.plist(5)
+
+macOS 26.5                      March 18, 2026                      macOS 26.5
