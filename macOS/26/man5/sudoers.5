@@ -45,6 +45,13 @@ DESCRIPTION
              false will disable error recovery.  Prior to version 1.9.3, no
              error recovery was performed.
 
+       ignore_perms=bool
+             The ignore_perms argument can be used to disable security checks
+             when loading the sudoers file.  If enabled, the sudoers file will
+             be loaded regardless of the owner or file mode.  This argument is
+             intended to be used for testing purposes and should not be
+             enabled on production systems.
+
        ldap_conf=pathname
              The ldap_conf argument can be used to override the default path
              to the ldap.conf file.
@@ -114,6 +121,10 @@ DESCRIPTION
        a separate record for each terminal, which means that a user's login
        sessions are authenticated separately.  The timestamp_type option can
        be used to select the type of time stamp record sudoers will use.
+
+       The tsdump utility, included with the sudo source distribution, can be
+       used to display the contents of a time stamp file.  See
+       sudoers_timestamp(5) for details of the time stamp file format.
 
    Logging
        By default, sudoers logs both successful and unsuccessful attempts (as
@@ -190,8 +201,15 @@ DESCRIPTION
        environment variables to remove varies based on the operating system
        sudo is running on.
 
-       Other sudoers options may influence the command environment, such as
-       always_set_home, secure_path, set_logname, and set_home.
+       Other settings may influence the command environment:
+
+       •  sudoers options such as always_set_home, secure_path, set_logname,
+          set_home, and setenv.
+
+       •  Command tags, such as SETENV and NOSETENV.  Note that SETENV is
+          implied if the command matched is ALL.
+
+       •  sudo options, such as -E and -i.
 
        On systems that support PAM where the pam_env module is enabled for
        sudo, variables in the PAM environment may be merged in to the
@@ -342,7 +360,7 @@ SUDOERS FILE FORMAT
 
        Cmnd_Alias_Spec ::= Cmnd_Alias '=' Cmnd_List
 
-       NAME ::= [A-Z]([A-Z][0-9]_)*
+       NAME ::= [A–Z]([A–Z][0–9]_)*
 
        Each alias definition is of the form
 
@@ -457,8 +475,8 @@ SUDOERS FILE FORMAT
        “localhost” will only match if that is the actual host name, which is
        usually only the case for non-networked systems.
 
-       digest ::= [A-Fa-f0-9]+ |
-                  [A-Za-z0-9\+/=]+
+       digest ::= [A–Fa–f0–9]+ |
+                  [A–Za–z0–9\+/=]+
 
        Digest_Spec ::= "sha224" ':' digest |
                        "sha256" ':' digest |
@@ -572,16 +590,23 @@ SUDOERS FILE FORMAT
    Defaults
        Certain configuration options may be changed from their default values
        at run-time via one or more Default_Entry lines.  These may affect all
-       users on any host, all users on a specific host, a specific user, a
-       specific command, or commands being run as a specific user.  Per-
-       command entries may not include command line arguments.  If you need to
-       specify arguments, define a Cmnd_Alias and reference that instead.
+       users on any host (‘Defaults’), all users on a specific host
+       (‘Defaults@host’), a specific user (‘Defaults:user’), a specific
+       command (‘Defaults!cmnd’), or commands being run as a specific user
+       (‘Defaults>runasuser’).
+
+       White space is not permitted between ‘Defaults’ and the ‘@’, ‘:’, ‘!’,
+       or ‘>’ characters.  While a comma-separated list may be used in place
+       of a single value after the ‘@’, ‘:’, ‘!’, or ‘>’ character, using an
+       alias instead of a list is often improve readability.  Per-command
+       entries may not include command line arguments.  If you need to specify
+       arguments, define a Cmnd_Alias and reference that instead.
 
        Default_Type ::= 'Defaults' |
-                        'Defaults' '@' Host_List |
-                        'Defaults' ':' User_List |
-                        'Defaults' '!' Cmnd_List |
-                        'Defaults' '>' Runas_List
+                        'Defaults@' Host_List |
+                        'Defaults:' User_List |
+                        'Defaults!' Cmnd_List |
+                        'Defaults>' Runas_List
 
        Default_Entry ::= Default_Type Parameter_List
 
@@ -612,11 +637,12 @@ SUDOERS FILE FORMAT
        is not an error to use the ‘-=’ operator to remove an element that does
        not exist in a list.
 
-       Defaults entries are parsed in the following order: global, host, user,
-       and runas Defaults first, then command defaults.  If there are multiple
-       Defaults settings of the same type, the last matching setting is used.
-       The following Defaults settings are parsed before all others since they
-       may affect subsequent entries: fqdn, group_plugin, runas_default,
+       In general Defaults settings are applied in order, later entries will
+       override earlier ones.  However, command-specific Defaults settings are
+       applied later, once the command's path is known.  In addition, the
+       following Defaults settings must be applied before all others since
+       they may affect subsequent entries: fqdn, group_plugin,
+       ignore_unknown_defaults, match_group_by_gid, runas_default,
        sudoers_locale.
 
        See SUDOERS OPTIONS for a list of supported Defaults parameters.
@@ -632,9 +658,7 @@ SUDOERS FILE FORMAT
 
        Runas_Spec ::= '(' Runas_List? (':' Runas_List)? ')'
 
-       Option_Spec ::= (Date_Spec | Timeout_Spec)
-
-       AppArmor_Spec ::= 'APPARMOR_PROFILE=profile'
+       Option_Spec ::= (Date_Spec | Timeout_Spec | Chdir_Spec | Chroot_Spec)
 
        Date_Spec ::= ('NOTBEFORE=timestamp' | 'NOTAFTER=timestamp')
 
@@ -734,37 +758,11 @@ SUDOERS FILE FORMAT
 
    Option_Spec
        A Cmnd may have zero or more options associated with it.  Options may
-       consist of AppArmor profiles, start and/or end dates and command
-       timeouts.  Once an option is set for a Cmnd, subsequent Cmnds in the
-       Cmnd_Spec_List, inherit that option unless it is overridden by another
-       option.  Option names are reserved words in sudoers.  This means that
-       none of the valid option names (see below) can be used when declaring
-       an alias.
-
-   AppArmor_Spec
-       On systems supporting AppArmor, sudoers file entries may optionally
-       specify an AppArmor profile that should be used to confine a command.
-       If an AppArmor profile is specified with the command, it will override
-       any default values specified in sudoers.  Appropriate profile
-       transition rules must be defined to support the profile change
-       specified for a user.
-
-       AppArmor profiles can be specified in any way that complies with the
-       rules of aa_change_profile(2).  For instance, in the following sudoers
-       entry
-
-       alice     ALL = (root)   APPARMOR_PROFILE=my-profile   ALL
-
-       the user alice may run any command as root under confinement by the
-       profile ‘my-profile’.  You can also stack profiles, or allow a user to
-       run commands unconfined by any profile.  For example:
-
-       bob  ALL = (root)   APPARMOR_PROFILE=foo//&bar    /usr/bin/vi
-       cathy     ALL = (root)   APPARMOR_PROFILE=unconfined   /bin/ls
-
-       These sudoers entries allow user bob to run /usr/bin/vi as root under
-       the stacked profiles ‘foo’ and ‘bar’, and user cathy to run /bin/ls
-       without any confinement at all.
+       consist of start and/or end dates and command timeouts.  Once an option
+       is set for a Cmnd, subsequent Cmnds in the Cmnd_Spec_List, inherit that
+       option unless it is overridden by another option.  Option names are
+       reserved words in sudoers.  This means that none of the valid option
+       names (see below) can be used when declaring an alias.
 
    Date_Spec
        sudoers rules can be specified with a start and end date via the
@@ -817,6 +815,9 @@ SUDOERS FILE FORMAT
        This setting is only supported by version 1.9.3 or higher.
 
    Chroot_Spec
+       Support for setting the root directory is deprecated and will be
+       removed in a future version of sudo.
+
        The root directory that the command will be run in can be specified
        using the CHROOT setting.  The directory must be a fully-qualified path
        name beginning with a ‘/’ or ‘~’ character, or the special value “*”.
@@ -845,7 +846,7 @@ SUDOERS FILE FORMAT
          dynamically-linked executable from running further commands itself.
 
          In the following example, user aaron may run /usr/bin/more and
-         /usr/bin/vi but shell escapes will be disabled.
+         /usr/bin/vi on the host shanty, but shell escapes will be disabled.
 
          aaron     shanty = NOEXEC: /usr/bin/more, /usr/bin/vi
 
@@ -1096,7 +1097,9 @@ SUDOERS FILE FORMAT
 
            @include /etc/sudoers.%h
 
-       will cause sudo to include the file /etc/sudoers.xerxes.
+       will cause sudo to include the file /etc/sudoers.xerxes.  Any path name
+       separator characters (‘/’) present in the host name will be replaced
+       with an underbar (‘_’) during expansion.
 
        The @includedir directive can be used to create a sudoers.d directory
        that the system package manager can drop sudoers file rules into as
@@ -1393,7 +1396,7 @@ SUDOERS OPTIONS
 
        ignore_dot        If set, sudo will ignore "." or "" (both denoting the
                          current directory) in the PATH environment variable;
-                         the PATH itself is not modified.  This flag is off by
+                         the PATH itself is not modified.  This flag is on by
                          default.
 
        ignore_iolog_errors
@@ -1539,12 +1542,14 @@ SUDOERS OPTIONS
                          logged.  This flag is off by default.
 
                          The log_subcmds flag uses the same underlying
-                         mechanism as the intercept setting.  See Preventing
-                         shell escapes for more information on what systems
-                         support this option and its limitations.  This
-                         setting is only supported by version 1.9.8 or higher
-                         and is incompatible with SELinux RBAC support unless
-                         the system supports seccomp(2) filter mode.
+                         mechanism as the intercept setting.  Some commands
+                         may not work properly when log_subcmds is enabled,
+                         due to the way it intercepts sub-commands.  See
+                         Preventing shell escapes for more information on what
+                         systems support this option and its limitations.
+                         This setting is only supported by version 1.9.8 or
+                         higher and is incompatible with SELinux RBAC support
+                         unless the system supports seccomp(2) filter mode.
 
        log_ttyin         If set, sudo will run the command in a pseudo-
                          terminal and log user keystrokes sent to the user's
@@ -1650,10 +1655,12 @@ SUDOERS OPTIONS
 
        intercept         If set, all commands run via sudo will behave as if
                          the INTERCEPT tag has been set, unless overridden by
-                         an NOINTERCEPT tag.  See the description of INTERCEPT
-                         and NOINTERCEPT above as well as the Preventing shell
-                         escapes section at the end of this manual.  This flag
-                         is off by default.
+                         an NOINTERCEPT tag.  Some commands may not work
+                         properly when intercept is enabled, due to the way it
+                         intercept sub-commands.  See the description of
+                         INTERCEPT and NOINTERCEPT above as well as the
+                         Preventing shell escapes section at the end of this
+                         manual.  This flag is off by default.
 
                          This setting is only supported by version 1.9.8 or
                          higher and is incompatible with SELinux RBAC support
@@ -1709,8 +1716,14 @@ SUDOERS OPTIONS
                          proc(5) file system is available.  This flag has no
                          effect unless the intercept flag is enabled or the
                          INTERCEPT tag has been set for the command and the
-                         intercept_type option is set to trace.  This flag is
-                         on by default.
+                         intercept_type option is set to trace.
+
+                         This setting is incompatible with programs that
+                         change their root directory via chroot(2).  If a
+                         program changes its root directory, path names will
+                         no longer match those seen by the sudo parent process
+                         and sub-commands will be terminated before they have
+                         a chance to run.  This flag is on by default.
 
                          This setting is only supported by version 1.9.12 or
                          higher.
@@ -1809,6 +1822,17 @@ SUDOERS OPTIONS
                          it as a child process.  This flag is on by default.
 
                          This setting is only supported by version 1.8.8 or
+                         higher.
+
+       pam_silent        If set, PAM authentication will be performed in
+                         silent mode.  This prevents PAM authentication
+                         modules from generating output.  In some cases, this
+                         may suppress important information about why
+                         authentication failed.  For example, PAM modules such
+                         as pam_faillock will only display a warning if
+                         pam_silent is disabled.  This flag is on by default.
+
+                         This setting is only supported by version 1.9.16 or
                          higher.
 
        passprompt_override
@@ -2027,9 +2051,9 @@ SUDOERS OPTIONS
                          on by default.
 
        use_pty           If set, and sudo is running in a terminal, the
-                         command will be run in a pseudo-terminal (even if no
-                         I/O logging is being done).  If the sudo process is
-                         not attached to a terminal, use_pty has no effect.
+                         command will be run in a new pseudo-terminal.  If the
+                         sudo process is not attached to a terminal, use_pty
+                         has no effect.
 
                          A malicious program run under sudo may be capable of
                          injecting commands into the user's terminal or
@@ -2037,7 +2061,16 @@ SUDOERS OPTIONS
                          the user's terminal device even after the main
                          program has finished executing.  By running the
                          command in a separate pseudo-terminal, this attack is
-                         no longer possible.  This flag is off by default.
+                         no longer possible.
+
+                         A side effect of running the command in a new pseudo-
+                         terminal is that input will be passed to the command
+                         even if it is non-interactive.  This means that, for
+                         example, keys pressed while a non-interactive command
+                         is running will be consumed by sudo instead of being
+                         passed to the shell after the command exits.
+
+                         This flag is on by default for sudo 1.9.14 and above.
 
        user_command_timeouts
                          If set, the user may specify a timeout on the command
@@ -2070,7 +2103,7 @@ SUDOERS OPTIONS
        closefrom         Before it executes a command, sudo will close all
                          open file descriptors other than standard input,
                          standard output, and standard error (file descriptors
-                         0-2).  The closefrom option can be used to specify a
+                         0–2).  The closefrom option can be used to specify a
                          different file descriptor at which to start closing.
                          The default is 3.
 
@@ -2102,7 +2135,7 @@ SUDOERS OPTIONS
 
                          Once the local sequence number reaches the value of
                          maxseq, it will “roll over” to zero, after which
-                         sudoers will truncate and re-use any existing I/O log
+                         sudoers will truncate and reuse any existing I/O log
                          path names.
 
                          This setting is only supported by version 1.8.7 or
@@ -2172,12 +2205,14 @@ SUDOERS OPTIONS
 
        Strings:
 
-       apparmor_profile  The default AppArmor profile to transition into when
-                         executing the command.  The default apparmor_profile
-                         can be overridden for individual sudoers entries by
-                         specifying the APPARMOR_PROFILE option.  This option
-                         is only available when sudo is built with AppArmor
-                         support.
+       cmddenial_message
+                         It set, sudo will display this message when a user is
+                         denied access to run the specified command, but is
+                         listed in the sudoers file for the host.  This can be
+                         used to provide additional, site-specific information
+                         to the user when a command is denied by the security
+                         policy.  It does not override the standard warning
+                         the user receives when a command is denied.
 
        authfail_message  Message that is displayed after a user fails to
                          authenticate.  The message may include the ‘%d’
@@ -2272,6 +2307,10 @@ SUDOERS OPTIONS
 
                          To include a literal ‘%’ character, the string ‘%%’
                          should be used.
+
+                         Any path name separator characters (‘/’) present in
+                         the user, group or host name will be replaced with an
+                         underbar (‘_’) during expansion.
 
        iolog_file        The path name, relative to iolog_dir, in which to
                          store input/output logs when the log_input or
@@ -2742,102 +2781,103 @@ EVENT LOGGING
        denial will follow the user name.  Possible reasons include:
 
        user NOT in sudoers
-          The user is not listed in the sudoers file.
+             The user is not listed in the sudoers file.
 
        user NOT authorized on host
-          The user is listed in the sudoers file but is not allowed to run
-          commands on the host.
+             The user is listed in the sudoers file but is not allowed to run
+             commands on the host.
 
        command not allowed
-          The user is listed in the sudoers file for the host but they are not
-          allowed to run the specified command.
+             The user is listed in the sudoers file for the host but they are
+             not allowed to run the specified command.
 
        3 incorrect password attempts
-          The user failed to enter their password after 3 tries.  The actual
-          number of tries will vary based on the number of failed attempts and
-          the value of the passwd_tries option.
+             The user failed to enter their password after 3 tries.  The
+             actual number of tries will vary based on the number of failed
+             attempts and the value of the passwd_tries option.
 
        a password is required
-          The -n option was specified but a password was required.
+             The -n option was specified but a password was required.
 
        sorry, you are not allowed to set the following environment variables
-          The user specified environment variables on the command line that
-          were not allowed by sudoers.
+             The user specified environment variables on the command line that
+             were not allowed by sudoers.
 
    Error log entries
        If an error occurs, sudoers will log a message and, in most cases, send
        a message to the administrator via email.  Possible errors include:
 
        parse error in /private/etc/sudoers near line N
-          sudoers encountered an error when parsing the specified file.  In
-          some cases, the actual error may be one line above or below the line
-          number listed, depending on the type of error.
+             sudoers encountered an error when parsing the specified file.  In
+             some cases, the actual error may be one line above or below the
+             line number listed, depending on the type of error.
 
        problem with defaults entries
-          The sudoers file contains one or more unknown Defaults settings.
-          This does not prevent sudo from running, but the sudoers file should
-          be checked using visudo.
+             The sudoers file contains one or more unknown Defaults settings.
+             This does not prevent sudo from running, but the sudoers file
+             should be checked using visudo.
 
        timestamp owner (username): No such user
-          The time stamp directory owner, as specified by the timestampowner
-          setting, could not be found in the password database.
+             The time stamp directory owner, as specified by the
+             timestampowner setting, could not be found in the password
+             database.
 
        unable to open/read /private/etc/sudoers
-          The sudoers file could not be opened for reading.  This can happen
-          when the sudoers file is located on a remote file system that maps
-          user-ID 0 to a different value.  Normally, sudoers tries to open the
-          sudoers file using group permissions to avoid this problem.
-          Consider either changing the ownership of /private/etc/sudoers or
-          adding an argument like “sudoers_uid=N” (where ‘N’ is the user-ID
-          that owns the sudoers file) to the end of the sudoers Plugin line in
-          the sudo.conf(5) file.
+             The sudoers file could not be opened for reading.  This can
+             happen when the sudoers file is located on a remote file system
+             that maps user-ID 0 to a different value.  Normally, sudoers
+             tries to open the sudoers file using group permissions to avoid
+             this problem.  Consider either changing the ownership of
+             /private/etc/sudoers or adding an argument like “sudoers_uid=N”
+             (where ‘N’ is the user-ID that owns the sudoers file) to the end
+             of the sudoers Plugin line in the sudo.conf(5) file.
 
        unable to open /private/etc/sudoers
-          The /private/etc/sudoers file is missing.
+             The /private/etc/sudoers file is missing.
 
        /private/etc/sudoers is not a regular file
-          The /private/etc/sudoers file exists but is not a regular file or
-          symbolic link.
+             The /private/etc/sudoers file exists but is not a regular file or
+             symbolic link.
 
        /private/etc/sudoers is owned by uid N, should be 0
-          The sudoers file has the wrong owner.  If you wish to change the
-          sudoers file owner, add “sudoers_uid=N” (where ‘N’ is the user-ID
-          that owns the sudoers file) to the sudoers Plugin line in the
-          sudo.conf(5) file.
+             The sudoers file has the wrong owner.  If you wish to change the
+             sudoers file owner, add “sudoers_uid=N” (where ‘N’ is the user-ID
+             that owns the sudoers file) to the sudoers Plugin line in the
+             sudo.conf(5) file.
 
        /private/etc/sudoers is world writable
-          The permissions on the sudoers file allow all users to write to it.
-          The sudoers file must not be world-writable, the default file mode
-          is 0440 (readable by owner and group, writable by none).  The
-          default mode may be changed via the “sudoers_mode” option to the
-          sudoers Plugin line in the sudo.conf(5) file.
+             The permissions on the sudoers file allow all users to write to
+             it.  The sudoers file must not be world-writable, the default
+             file mode is 0440 (readable by owner and group, writable by
+             none).  The default mode may be changed via the “sudoers_mode”
+             option to the sudoers Plugin line in the sudo.conf(5) file.
 
        /private/etc/sudoers is owned by gid N, should be 1
-          The sudoers file has the wrong group ownership.  If you wish to
-          change the sudoers file group ownership, add “sudoers_gid=N” (where
-          ‘N’ is the group-ID that owns the sudoers file) to the sudoers
-          Plugin line in the sudo.conf(5) file.
+             The sudoers file has the wrong group ownership.  If you wish to
+             change the sudoers file group ownership, add “sudoers_gid=N”
+             (where ‘N’ is the group-ID that owns the sudoers file) to the
+             sudoers Plugin line in the sudo.conf(5) file.
 
-       unable to open /var/db/sudo/ts/username
-          sudoers was unable to read or create the user's time stamp file.
-          This can happen when timestampowner is set to a user other than root
-          and the mode on /var/db/sudo is not searchable by group or other.
-          The default mode for /var/db/sudo is 0711.
+       unable to open /var/db/sudo/ts/user-ID
+             sudoers was unable to read or create the user's time stamp file.
+             This can happen when timestampowner is set to a user other than
+             root and the mode on /var/db/sudo is not searchable by group or
+             other.  The default mode for /var/db/sudo is 0711.
 
-       unable to write to /var/db/sudo/ts/username
-          sudoers was unable to write to the user's time stamp file.
+       unable to write to /var/db/sudo/ts/user-ID
+             sudoers was unable to write to the user's time stamp file.
 
        /var/db/sudo/ts is owned by uid X, should be Y
-          The time stamp directory is owned by a user other than
-          timestampowner.  This can occur when the value of timestampowner has
-          been changed.  sudoers will ignore the time stamp directory until
-          the owner is corrected.
+             The time stamp directory is owned by a user other than
+             timestampowner.  This can occur when the value of timestampowner
+             has been changed.  sudoers will ignore the time stamp directory
+             until the owner is corrected.
 
        /var/db/sudo/ts is group writable
-          The time stamp directory is group-writable; it should be writable
-          only by timestampowner.  The default mode for the time stamp
-          directory is 0700.  sudoers will ignore the time stamp directory
-          until the mode is corrected.
+             The time stamp directory is group-writable; it should be writable
+             only by timestampowner.  The default mode for the time stamp
+             directory is 0700.  sudoers will ignore the time stamp directory
+             until the mode is corrected.
 
    Notes on logging via syslog
        By default, sudoers logs messages via syslog(3).  The date, hostname,
@@ -3108,7 +3148,7 @@ I/O LOGGING
        of I/O logs.  The simplest way to limit the number of I/O is by setting
        the maxseq option to the maximum number of logs you wish to store.
        Once the I/O log sequence number reaches maxseq, it will be reset to
-       zero and sudoers will truncate and re-use any existing I/O logs.
+       zero and sudoers will truncate and reuse any existing I/O logs.
 
 FILES
        /private/etc/sudo.conf    Sudo front-end configuration
@@ -3180,21 +3220,19 @@ EXAMPLES
        to log via syslog(3) using the auth facility in all cases and for
        commands to be run with the target user's home directory as the working
        directory.  We don't want to subject the full time staff to the sudo
-       lecture and we want to allow them to run commands in a chroot(2)
-       “sandbox” via the -R option.  User millert need not provide a password
-       and we don't want to reset the LOGNAME or USER environment variables
-       when running commands as root.  Additionally, on the machines in the
-       SERVERS Host_Alias, we keep an additional local log file and make sure
-       we log the year in each log line since the log entries will be kept
-       around for several years.  Lastly, we disable shell escapes for the
-       commands in the PAGERS Cmnd_Alias (/usr/bin/more, /usr/bin/pg and
-       /usr/bin/less) .  This will not effectively constrain users with sudo
-       ALL privileges.
+       lecture.  User millert need not provide a password and we don't want to
+       reset the LOGNAME or USER environment variables when running commands
+       as root.  Additionally, on the machines in the SERVERS Host_Alias, we
+       keep an additional local log file and make sure we log the year in each
+       log line since the log entries will be kept around for several years.
+       Lastly, we disable shell escapes for the commands in the PAGERS
+       Cmnd_Alias (/usr/bin/more, /usr/bin/pg and /usr/bin/less) .  This will
+       not effectively constrain users with sudo ALL privileges.
 
        # Override built-in defaults
        Defaults       syslog=auth,runcwd=~
        Defaults>root       !set_logname
-       Defaults:FULLTIMERS !lecture,runchroot=*
+       Defaults:FULLTIMERS !lecture
        Defaults:millert    !authenticate
        Defaults@SERVERS    log_year, logfile=/var/log/sudo.log
        Defaults!PAGERS          noexec
@@ -3434,7 +3472,8 @@ SECURITY NOTES
                   to transparently intercept an attempt to run a new command,
                   allow or deny it based on sudoers rules, and log the result.
                   For example, this can be used to restrict the commands run
-                  from within a privileged shell or editor.
+                  from within a privileged shell or editor.  However, not all
+                  programs operate correctly when intercept is enabled.
 
                   There are two underlying mechanisms that may be used to
                   implement intercept mode: dso and trace.  The intercept_type
@@ -3467,7 +3506,11 @@ SECURITY NOTES
                   dynamic executables are supported and it is compatible with
                   sudo's SELinux RBAC mode.  Functions utilizing the
                   execveat(2) system call, such as fexecve(3), are not
-                  currently intercepted.
+                  currently intercepted.  Programs that rely on ptrace(2)
+                  themselves, such as debuggers and system call tracers (such
+                  as strace(1) and truss(1)) will be unable to function if
+                  intercept is enabled in trace mode.  This same restriction
+                  applies to the log_subcmds sudoers option.
 
                   The intercept feature is known to work on Solaris, *BSD,
                   Linux, macOS, HP-UX 11.x and AIX 5.3 and above.  It should
@@ -3628,7 +3671,7 @@ SECURITY NOTES
        recorded in the time stamp record.  If no terminal is present or the
        timestamp_type option is set to “ppid”, the start time of the parent
        process is used instead.  In most cases this will prevent a time stamp
-       record from being re-used without the user entering a password when
+       record from being reused without the user entering a password when
        logging out and back in again.
 
 DEBUGGING
@@ -3693,8 +3736,8 @@ DEBUGGING
 
 SEE ALSO
        ssh(1), su(1), fnmatch(3), glob(3), mktemp(3), strftime(3),
-       sudo.conf(5), sudo_plugin(5), sudoers.ldap(5), sudoers_timestamp(5),
-       sudo(8), visudo(8)
+       sudo.conf(5), sudo_logsrv.proto(5), sudo_plugin(5), sudoers.ldap(5),
+       sudoers_timestamp(5), sudo(8), sudo_logsrvd(8), visudo(8)
 
 AUTHORS
        Many people have worked on sudo over the years; this version consists
@@ -3721,8 +3764,17 @@ CAVEATS
        returned by the hostname command or use the fqdn option in sudoers.
 
 BUGS
-       If you believe you have found a bug in sudo, you can submit a bug
-       report at https://bugzilla.sudo.ws/
+       If you believe you have found a bug in sudoers, you can either file a
+       bug report in the sudo bug database, https://bugzilla.sudo.ws/, or open
+       an issue at https://github.com/sudo-project/sudo/issues.  If you would
+       prefer to use email, messages may be sent to the sudo-workers mailing
+       list, https://www.sudo.ws/mailman/listinfo/sudo-workers (public) or
+       <sudo@sudo.ws> (private).
+
+       Please do not report security vulnerabilities through public GitHub
+       issues, Bugzilla or mailing lists.  Instead, report them via email to
+       <Todd.Miller@sudo.ws>.  You may encrypt your message with PGP if you
+       would like, using the key found at https://www.sudo.ws/dist/PGPKEYS.
 
 SUPPORT
        Limited free support is available via the sudo-users mailing list, see
@@ -3736,4 +3788,4 @@ DISCLAIMER
        See the LICENSE.md file distributed with sudo or
        https://www.sudo.ws/about/license/ for complete details.
 
-Sudo 1.9.13p2                  January 16, 2023                     SUDOERS(5)
+Sudo 1.9.17p2                    June 7, 2025                       SUDOERS(5)

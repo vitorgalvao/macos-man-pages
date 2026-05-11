@@ -1,0 +1,46 @@
+quitreally(1)               General Commands Manual              quitreally(1)
+
+NAME
+     quitreally – diagnostic support for this feature
+
+SYNOPSIS
+     quitreally [-h] [--help] [-v] [--verbose] [--status] [--inspect APP]
+                [--visible APP]
+
+DESCRIPTION
+     quitreally Query various bits of infomation about the quit really
+     feature.
+
+Commands
+     ---status
+              Returns information about the applications which have exited and
+              left behind running non-visible children applications,
+              processes, or loaded jobs.
+
+     --inspect APP
+              Returns information about the application specified by Ar APP
+
+     --visible APP
+              Returns whether the given application is visible or not.
+
+Specifying an application
+     Applications are specified either by
+
+     name     the name of the application
+
+     bundleIdentifier
+              the bundle identifier of the application
+
+     ASN      the ASN of a running application, specified as
+              0xAAAAAAAA-0xBBBBBBBB, where A and B are hex digits
+
+     PID      the pid of a running application
+
+     bundle path
+              the bundle path of a running application
+
+     all      all applications
+
+     exited   all applications which have exited but left behind
+
+Darwin                              8/4/10                              Darwin

@@ -1,0 +1,274 @@
+CRYPTEX-PLIST-KEYS(5)         File Formats Manual        CRYPTEX-PLIST-KEYS(5)
+
+NAME
+       cryptex-plist-keys - Property list keys used in cryptex Info.plist
+
+
+DESCRIPTION
+       This manual describes the property list (plist) keys used by the
+       cryptex framework.
+
+
+CRYPTEX INFO.PLIST KEYS
+       These keys are used in the main Info.plist file of a cryptex and are
+       processed by cryptexd during cryptex installation and mounting.
+
+
+   Basic Identity Keys
+       CFBundleIdentifier
+              (string, required) The unique identifier for the cryptex bundle.
+              This follows reverse DNS notation (e.g.,
+              "com.example.mycryptex").
+
+
+       CFBundleVersion
+              (string, required) The version string of the cryptex. Used for
+              dependency resolution and upgrade management.
+
+
+       Name   (string, optional) Human-readable name of the cryptex package.
+
+
+       Version
+              (string, optional) Package version identifier (may differ from
+              CFBundleVersion).
+
+
+       Publisher
+              (string, optional) The entity responsible for publishing the
+              cryptex.
+
+
+   Mount Configuration Keys
+       NoCode (boolean, optional) When set to true, indicates the cryptex
+              contains no executable code. Such cryptexes have restricted
+              mount paths and cannot bootstrap any content.
+
+
+       RequiredMountPath
+              (string, optional) Specifies a custom absolute path where the
+              cryptex must be mounted. If not specified, the system will
+              generate a temporary mount point. For NoCode cryptexes, only
+              specific paths are permitted:
+
+              • /private/var/MLModels/
+
+              • /private/var/run/com.apple.security.cryptexd/
+
+
+   Bootstrap Configuration Keys
+       BootstrapContents
+              (array of strings, optional) Specifies which types of content
+              should be bootstrapped from the cryptex.  Important: This key
+              serves as a selective override mechanism rather than a
+              comprehensive specification. Many content types are
+              automatically enabled based on cryptex type and installation
+              context.
+
+              Default Behavior:
+
+              • Always enabled: "Service" and "Jetsam Properties" are
+                automatically included for all cryptexes
+
+              • System cryptex defaults: "Log Profile" and "Feature Flags" are
+                automatically enabled for system cryptexes
+
+              • Session cryptex restrictions: "Library", "Executable",
+                "Factory", and "Log Profile" are disabled for session
+                cryptexes
+
+              • NoCode cryptex restrictions: All bootstrap content is disabled
+                for cryptexes marked with NoCode=true
+
+       Valid content type strings:
+
+              • "Service" - Bootstrap launchd services from
+                Library/LaunchDaemons/ and Library/LaunchAgents/
+
+              • "Library" - Create symlinks from cryptex libraries to system
+                library paths (/usr/local/lib, etc.)
+
+              • "Executable" - Create binary "trampolines" that redirect
+                system calls to cryptex executables
+
+              • "Factory" - Bootstrap diagnostic content (creates APFS Diags
+                volume, enables LuaCore, Python, Astro content)
+
+              • "Log Profile" - Bootstrap logging configuration files from
+                Library/Preferences/Logging/Subsystems/
+
+              • "Feature Flags" - Copy feature flag domain files from
+                Library/Preferences/FeatureFlags/Domain/
+
+              • "Jetsam Properties" - Load Jetsam memory management properties
+
+
+       DeveloperModeRequired
+              (boolean, optional) When set to true, the cryptex can only be
+              installed when the system is in developer mode.
+
+
+   Command Execution Keys
+       OSCryptexExecCommand
+              (string, optional) The main command to execute by cryptexctl
+              exec.
+
+
+       OSCryptexExecCommandArguments
+              (array of strings, optional) Command-line arguments to pass to
+              the main command. This does not include `argv[0]`.
+
+
+       OSCryptexExecEnvironmentVariables
+              (dictionary, optional) Environment variables to set when
+              executing the main command.
+
+
+   Dependencies and Security Keys
+       Dependencies
+              (array of dictionaries, optional) Specifies cryptexes that this
+              cryptex depends on. Each dependency is a dictionary containing:
+
+              • CFBundleIdentifier (string, required) - Bundle ID of the
+                dependency
+
+              • CFBundleVersion (string, optional) - Minimum required version
+       Maximum of 8 dependencies allowed.
+
+
+       LimitInstallToApps
+              (array of dictionaries, optional) Restricts installation to
+              specific applications. Each entry contains CFBundleIdentifier of
+              an allowed app. Requires SecureConfigDB support and matching
+              configuration. Maximum of 256 entries allowed.
+
+
+WATCHDOG CONFIGURATION KEYS
+       These keys are defined in the cryptex Info.plist but reference services
+       that will be loaded from launchd plists within the cryptex.
+
+
+       Watchdog
+              (array of dictionaries, optional) Configuration for service
+              watchdog monitoring. Each dictionary contains:
+
+
+              Label  (string, required) Service label that matches a launchd
+                     service within the cryptex.
+
+
+              ProcessName
+                     (string, required) Name of the process to monitor.
+
+
+              WatchdogMachService
+                     (string, required) Mach service name used for watchdog
+                     communication.
+
+
+              LateFirstCheckin
+                     (boolean, optional) Allow the service to check in late on
+                     first startup.
+
+
+              PanicOnFirstTimeout
+                     (boolean, optional) Trigger a system panic if the service
+                     times out on first startup.
+
+
+              CaptureDdtOnTimeout
+                     (boolean, optional) Capture diagnostic data (DDT) when
+                     the service times out.
+
+
+EXAMPLES
+   Basic Info.plist
+       <?xml version="1.0" encoding="UTF-8"?>
+       <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+         "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+       <plist version="1.0">
+       <dict>
+           <key>CFBundleIdentifier</key>
+           <string>com.example.mycryptex</string>
+           <key>CFBundleVersion</key>
+           <string>1.0.0</string>
+           <key>BootstrapContents</key>
+           <array>
+               <string>Service</string>
+               <string>Library</string>
+           </array>
+           <key>DeveloperModeRequired</key>
+           <true/>
+       </dict>
+       </plist>
+
+
+   Info.plist with Dependencies
+       <dict>
+           <key>CFBundleIdentifier</key>
+           <string>com.example.dependent</string>
+           <key>CFBundleVersion</key>
+           <string>2.0.0</string>
+           <key>Dependencies</key>
+           <array>
+               <dict>
+                   <key>CFBundleIdentifier</key>
+                   <string>com.example.base</string>
+                   <key>CFBundleVersion</key>
+                   <string>1.5.0</string>
+               </dict>
+           </array>
+       </dict>
+
+
+   Info.plist with Watchdog
+       <dict>
+           <key>CFBundleIdentifier</key>
+           <string>com.example.monitored</string>
+           <key>CFBundleVersion</key>
+           <string>1.0.0</string>
+           <key>Watchdog</key>
+           <array>
+               <dict>
+                   <key>Label</key>
+                   <string>com.example.myservice</string>
+                   <key>ProcessName</key>
+                   <string>myservice</string>
+                   <key>WatchdogMachService</key>
+                   <string>com.example.myservice.watchdog</string>
+                   <key>LateFirstCheckin</key>
+                   <false/>
+                   <key>PanicOnFirstTimeout</key>
+                   <true/>
+               </dict>
+           </array>
+       </dict>
+
+
+ERRORS
+       Common errors when processing plist keys:
+
+       EBADPLIST_NP
+              Missing required keys (CFBundleIdentifier or CFBundleVersion)
+
+       EINVAL Invalid dependency specifications or install limit
+              configurations
+
+       ETOOMANYREFS
+              Too many dependencies (>8) or install limit entries (>256)
+
+       CRYPTEX_ERR_INVALID_INPUT
+              Malformed watchdog configurations or invalid content type
+              specifications
+
+
+SEE ALSO
+       cryptex(1), cryptexctl(1), plist(5)
+
+
+HISTORY
+       The cryptex plist key system was introduced as part of the libcryptex
+       framework for secure, authenticated filesystem extensions in Darwin-
+       based systems.
+
+libcryptex                        August 2025            CRYPTEX-PLIST-KEYS(5)

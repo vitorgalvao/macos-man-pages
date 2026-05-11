@@ -5,7 +5,7 @@ NAME
      (NAT) device
 
 SYNOPSIS
-     pfctl [-AdeghmNnOqRrvz] [-a anchor] [-D macro= value] [-F modifier]
+     pfctl [-AdeglhmNnOqRrvz] [-a anchor] [-D macro=value] [-F modifier]
            [-f file] [-i interface] [-K host | network] [-k host | network]
            [-o level] [-p device] [-s modifier] [-t table -T command
            [address ...]] [-x level]
@@ -152,6 +152,8 @@ DESCRIPTION
              all states with the target “host2”:
 
                    # pfctl -k 0.0.0.0/0 -k host2
+
+     -l      Use a local protocol database instead of getprotobynumber(3)
 
      -m      Merge in explicitly given options without resetting those which
              are omitted.  Allows single options to be modified without
@@ -387,4 +389,4 @@ HISTORY
      The pfctl program and the packet filter mechanism first appeared in
      OpenBSD 3.0.
 
-macOS 26.0                       July 1, 2007                       macOS 26.0
+macOS 26.4                       July 1, 2007                       macOS 26.4

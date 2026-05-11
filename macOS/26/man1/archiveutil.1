@@ -1,0 +1,30 @@
+ARCHIVEUTIL(1)              General Commands Manual             ARCHIVEUTIL(1)
+
+NAME
+     archiveutil – command-line interface for the Archive Utility application.
+
+SYNOPSIS
+     archiveutil command [options]
+
+DESCRIPTION
+     archiveutil is a command-line utility for working with archive files on
+     macOS. It provides various operations for extracting and manipulating
+     archive formats.
+
+COMMANDS
+     extractXcodeAEA path
+              Extract an Xcode AEA (Apple Encrypted Archive) file at the
+              specified path.
+
+EXAMPLES
+     Extract an Xcode AEA archive:
+
+           $ archiveutil extractXcodeAEA /path/to/Xcode.aea
+
+SEE ALSO
+     ditto(1), tar(1), zip(1), unzip(1)
+
+HISTORY
+     The archiveutil utility first appeared in macOS 15.0.
+
+Darwin                         October 14, 2025                         Darwin

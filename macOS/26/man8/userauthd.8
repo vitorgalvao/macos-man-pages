@@ -1,0 +1,27 @@
+userauthd(8)                System Manager's Manual               userauthd(8)
+
+NAME
+     userauthd – User Authentication Daemon
+
+DESCRIPTION
+     userauthd is a system daemon responsible for managing user authentication
+     data. It handles multiple authentication methods including password
+     verifiers, SRP verifiers, NTLM verifiers, recovery keys, and smart cards.
+     The daemon provides comprehensive functionality including managing
+     authentication methods (adding, removing, resetting), performing core
+     operations (login, logout, verify, lock, unlock), as well as monitoring
+     the availability and lockout status of each authentication method.
+
+     The userauthd command should not be run directly.
+
+FILES
+     /System/Library/Frameworks/LocalAuthentication.framework/Support/userauthd
+             The daemon executable
+
+     /System/Library/LaunchDaemons/com.apple.LocalAuthentication.userauthd.plist
+             Launch daemon configuration
+
+SEE ALSO
+     coreauthd(8)
+
+macOS 26.4                      August 5, 2025                      macOS 26.4

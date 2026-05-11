@@ -13,6 +13,9 @@ DESCRIPTION
        installing the edited file.  If the sudoers file is currently being
        edited you will receive a message to try again later.
 
+       If the sudoers file does not exist, it will be created unless the
+       editor exits without writing to the file.
+
        visudo parses the sudoers file after editing and will not save the
        changes if there is a syntax error.  Upon finding an error, visudo will
        print a message stating the line number(s) where the error occurred and
@@ -177,41 +180,51 @@ DIAGNOSTICS
        following messages:
 
        sudoers file busy, try again later.
-             Someone else is currently editing the sudoers file.
+           Someone else is currently editing the sudoers file.
 
        /private/etc/sudoers: Permission denied
-             You didn't run visudo as root.
+           You didn't run visudo as root.
 
        you do not exist in the passwd database
-             Your user-ID does not appear in the system passwd database.
+           Your user-ID does not appear in the system passwd database.
 
        Warning: {User,Runas,Host,Cmnd}_Alias referenced but not defined
-             Either you are trying to use an undeclared
-             {User,Runas,Host,Cmnd}_Alias or you have a user or host name
-             listed that consists solely of uppercase letters, digits, and the
-             underscore (‘_’) character.  In the latter case, you can ignore
-             the warnings (sudo will not complain) .  The message is prefixed
-             with the path name of the sudoers file and the line number where
-             the undefined alias was used.  In -s (strict) mode these are
-             errors, not warnings.
+           Either you are trying to use an undeclared
+           {User,Runas,Host,Cmnd}_Alias or you have a user or host name listed
+           that consists solely of uppercase letters, digits, and the
+           underscore (‘_’) character.  In the latter case, you can ignore the
+           warnings (sudo will not complain) .  The message is prefixed with
+           the path name of the sudoers file and the line number where the
+           undefined alias was used.  In -s (strict) mode these are errors,
+           not warnings.
 
        Warning: unused {User,Runas,Host,Cmnd}_Alias
-             The specified {User,Runas,Host,Cmnd}_Alias was defined but never
-             used.  The message is prefixed with the path name of the sudoers
-             file and the line number where the unused alias was defined.  You
-             may wish to comment out or remove the unused alias.
+           The specified {User,Runas,Host,Cmnd}_Alias was defined but never
+           used.  The message is prefixed with the path name of the sudoers
+           file and the line number where the unused alias was defined.  You
+           may wish to comment out or remove the unused alias.
 
        Warning: cycle in {User,Runas,Host,Cmnd}_Alias
-             The specified {User,Runas,Host,Cmnd}_Alias includes a reference
-             to itself, either directly or through an alias it includes.  The
-             message is prefixed with the path name of the sudoers file and
-             the line number where the cycle was detected.  This is only a
-             warning unless visudo is run in -s (strict) mode as sudo will
-             ignore cycles when parsing the sudoers file.
+           The specified {User,Runas,Host,Cmnd}_Alias includes a reference to
+           itself, either directly or through an alias it includes.  The
+           message is prefixed with the path name of the sudoers file and the
+           line number where the cycle was detected.  This is only a warning
+           unless visudo is run in -s (strict) mode as sudo will ignore cycles
+           when parsing the sudoers file.
+
+       ignoring editor backup file
+           While processing a @includedir or #includedir, a file was found
+           with a name that ends in ‘~’ or .bak.  Such files are skipped by
+           sudo and visudo.
+
+       ignoring file name containing '.'
+           While processing a @includedir or #includedir, a file was found
+           with a name that contains a ‘.’ character.  Such files are skipped
+           by sudo and visudo.
 
        unknown defaults entry "name"
-             The sudoers file contains a Defaults setting not recognized by
-             visudo.
+           The sudoers file contains a Defaults setting not recognized by
+           visudo.
 
 SEE ALSO
        vi(1), sudo.conf(5), sudoers(5), sudo(8), vipw(8)
@@ -231,8 +244,17 @@ CAVEATS
        editor used by visudo allows shell escapes.
 
 BUGS
-       If you believe you have found a bug in visudo, you can submit a bug
-       report at https://bugzilla.sudo.ws/
+       If you believe you have found a bug in visudo, you can either file a
+       bug report in the sudo bug database, https://bugzilla.sudo.ws/, or open
+       an issue at https://github.com/sudo-project/sudo/issues.  If you would
+       prefer to use email, messages may be sent to the sudo-workers mailing
+       list, https://www.sudo.ws/mailman/listinfo/sudo-workers (public) or
+       <sudo@sudo.ws> (private).
+
+       Please do not report security vulnerabilities through public GitHub
+       issues, Bugzilla or mailing lists.  Instead, report them via email to
+       <Todd.Miller@sudo.ws>.  You may encrypt your message with PGP if you
+       would like, using the key found at https://www.sudo.ws/dist/PGPKEYS.
 
 SUPPORT
        Limited free support is available via the sudo-users mailing list, see
@@ -246,4 +268,4 @@ DISCLAIMER
        See the LICENSE.md file distributed with sudo or
        https://www.sudo.ws/about/license/ for complete details.
 
-Sudo 1.9.13p2                  January 16, 2023                      VISUDO(8)
+Sudo 1.9.17p2                    July 27, 2023                       VISUDO(8)

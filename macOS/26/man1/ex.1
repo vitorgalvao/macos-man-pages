@@ -295,6 +295,8 @@ OPTIONS
                    terminal, but the window title and clipboard will not be
                    used.
 
+       -Y          Don't connect to the wayland compositor
+
        -y          Start Vim in easy mode, just like the executable was called
                    "evim" or "eview".  Makes Vim behave like a click-and-type
                    editor.
@@ -377,7 +379,16 @@ OPTIONS
        --servername {name}
                    Use {name} as the server name.  Used for the current Vim,
                    unless used with a --remote argument, then it's the name of
-                   the server to connect to.
+                   the server to connect to.  If the socketserver backend is
+                   being used, if the name starts with "/", "./", or "../", it
+                   is taken as either an absolute, relative or relative path
+                   to the socket.
+
+       --clientserver {backend}
+                   Use {backend} as the backend for clientserver
+                   functionality, either "socket" or "x11" respectively.  Only
+                   available when compiled with both socketserver and X11
+                   features present
 
        --socketid {id}
                    GTK GUI only: Use the GtkPlug mechanism to run gVim in
@@ -476,4 +487,4 @@ BUGS
        vi_diff.txt when in Vim).  Also have a look at the 'compatible' and
        'cpoptions' options.
 
-                                  2024 Aug 12                           VIM(1)
+                                  2025 Jun 27                           VIM(1)

@@ -81,7 +81,8 @@ RECORD
 
      --notify-after-end notification-name
              Emit a Darwin notification named notification-name with notify(3)
-             after the trace session has finished.
+             after the trace session has finished and the file is completely
+             written.
 
      --end-after-duration durations
              End tracing after the specified time period elapses.
@@ -105,6 +106,15 @@ RECORD
              that are older than duration time in the past.  This can be used
              to reduce the impact of recording's I/O on storage, at the cost
              of higher CPU usage spent processing incoming events.
+
+     --command | -c command [command-options]
+             Target tracing at a subprocess created from the command.
+             Recording ends when the command exits.
+
+     --process | -p pid-or-name
+             Target tracing at an existing process by ID (pid) or name.  This
+             option can be supplied multiple times and combined with
+             --command.
 
      --start-on-notification notification-name
              Wait to start tracing until a Darwin notification matching the
@@ -160,6 +170,9 @@ RECORD
      --collection-priority
              Set priority of collection, potentially interfering with other
              processes.
+
+     --kdebug-continuous-time
+             Record kdebug events with continuous timestamps.
 
 AMEND
      trace amend adds more information to previously-recorded trace files from
@@ -253,4 +266,4 @@ EXIT STATUS
 SEE ALSO
      fs_usage(1), notify(3), ktrace(5), and ktrace(1)
 
-Darwin                         December 1, 2023                         Darwin
+Darwin                        September 25, 2025                        Darwin

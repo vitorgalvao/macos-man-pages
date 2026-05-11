@@ -74,13 +74,6 @@ DESCRIPTION
                If no askpass program is available, sudo will exit with an
                error.
 
-       -a type, --auth-type=type
-               Use the specified BSD authentication type when validating the
-               user, if allowed by /etc/login.conf.  The system administrator
-               may specify a list of sudo-specific authentication methods by
-               adding an “auth-sudo” entry in /etc/login.conf.  This option is
-               only available on systems that support BSD authentication.
-
        -B, --bell
                Ring the bell as part of the password prompt when a terminal is
                present.  This option has no effect if an askpass program is
@@ -101,19 +94,6 @@ DESCRIPTION
                user's ability to use this option.  The sudoers policy only
                permits use of the -C option when the administrator has enabled
                the closefrom_override option.
-
-       -c class, --login-class=class
-               Run the command with resource limits and scheduling priority of
-               the specified login class.  The class argument can be either a
-               class name as defined in /etc/login.conf, or a single ‘-’
-               character.  If class is -, the default login class of the
-               target user will be used.  Otherwise, the command must be run
-               as the superuser (user-ID 0), or sudo must be run from a shell
-               that is already running as the superuser.  If the command is
-               being run as a login shell, additional /etc/login.conf
-               settings, such as the umask and environment variables, will be
-               applied, if present.  This option is only available on systems
-               with BSD login classes.
 
        -D directory, --chdir=directory
                Run the command in the specified directory instead of the
@@ -267,9 +247,13 @@ DESCRIPTION
                verbose output format.
 
                If a command is specified and is permitted by the security
-               policy, the fully-qualified path to the command is displayed
-               along with any args.  If a command is specified but not allowed
-               by the policy, sudo will exit with a status value of 1.
+               policy for the invoking user (or the, user specified by the -U
+               option) on the current host, the fully-qualified path to the
+               command is displayed along with any args.  If -l is specified
+               more than once (and the security policy supports it), the
+               matching rule is displayed in a verbose format along with the
+               command.  If a command is specified but not allowed by the
+               policy, sudo will exit with a status value of 1.
 
        -N, --no-update
                Do not update the user's cached credentials, even if the user
@@ -277,7 +261,8 @@ DESCRIPTION
                cached credentials are used if they are valid.  To detect when
                the user's cached credentials are valid (or when no
                authentication is required), the following can be used:
-                     sudo -Nnv
+
+                   sudo -Nnv
 
                Not all security policies support credential caching.
 
@@ -329,9 +314,8 @@ DESCRIPTION
                if the user does not have permission to specify the root
                directory.
 
-       -r role, --role=role
-               Run the command with an SELinux security context that includes
-               the specified role.
+               This option is deprecated and will be removed in a future
+               version of sudo.
 
        -S, --stdin
                Write the prompt to the standard error and read the password
@@ -349,11 +333,6 @@ DESCRIPTION
                executed.  Most shells behave differently when a command is
                specified as compared to an interactive session; consult the
                shell's manual for details.
-
-       -t type, --type=type
-               Run the command with an SELinux security context that includes
-               the specified type.  If no type is specified, the default type
-               is derived from the role.
 
        -U user, --other-user=user
                Used in conjunction with the -l option to list the privileges
@@ -458,7 +437,8 @@ COMMAND EXECUTION
        process and exits.  After receiving the command's exit status, the main
        sudo process passes the command's exit status to the security policy's
        close function, as well as the close function of any configured audit
-       plugin, and exits.
+       plugin, and exits.  This mode is the default for sudo versions 1.9.14
+       and above when using the sudoers policy.
 
        If no pty is used, sudo calls fork(2), sets up the execution
        environment as described above, and uses the execve(2) system call to
@@ -472,7 +452,8 @@ COMMAND EXECUTION
        pty is required, an SELinux role is specified, the command has an
        associated timeout, or the pam_session or pam_setcred options are
        enabled.  Both pam_session and pam_setcred are enabled by default on
-       systems using PAM.
+       systems using PAM.  This mode is the default for sudo versions prior to
+       1.9.14 when using the sudoers policy.
 
        On systems that use PAM, the security policy's close function is
        responsible for closing the PAM session.  It may also log the command's
@@ -615,11 +596,17 @@ ENVIRONMENT
 
        SUDO_GID         Set to the group-ID of the user who invoked sudo.
 
+       SUDO_HOME        Set to the home directory of the user who invoked
+                        sudo.
+
        SUDO_PROMPT      Used as the default password prompt unless the -p
                         option was specified.
 
        SUDO_PS1         If set, PS1 will be set to its value for the program
                         being run.
+
+       SUDO_TTY         Set to the terminal device of the user who invoked
+                        sudo, if one is present.
 
        SUDO_UID         Set to the user-ID of the user who invoked sudo.
 
@@ -671,91 +658,92 @@ DIAGNOSTICS
        Error messages produced by sudo include:
 
        editing files in a writable directory is not permitted
-             By default, sudoedit does not permit editing a file when any of
-             the parent directories are writable by the invoking user.  This
-             avoids a race condition that could allow the user to overwrite an
-             arbitrary file.  See the sudoedit_checkdir option in sudoers(5)
-             for more information.
+           By default, sudoedit does not permit editing a file when any of the
+           parent directories are writable by the invoking user.  This avoids
+           a race condition that could allow the user to overwrite an
+           arbitrary file.  See the sudoedit_checkdir option in sudoers(5) for
+           more information.
 
        editing symbolic links is not permitted
-             By default, sudoedit does not follow symbolic links when opening
-             files.  See the sudoedit_follow option in sudoers(5) for more
-             information.
+           By default, sudoedit does not follow symbolic links when opening
+           files.  See the sudoedit_follow option in sudoers(5) for more
+           information.
 
        effective uid is not 0, is sudo installed setuid root?
-             sudo was not run with root privileges.  The sudo binary must be
-             owned by the root user and have the set-user-ID bit set.  Also,
-             it must not be located on a file system mounted with the ‘nosuid’
-             option or on an NFS file system that maps uid 0 to an
-             unprivileged uid.
+           sudo was not run with root privileges.  The sudo binary must be
+           owned by the root user and have the set-user-ID bit set.  Also, it
+           must not be located on a file system mounted with the ‘nosuid’
+           option or on an NFS file system that maps uid 0 to an unprivileged
+           uid.
 
        effective uid is not 0, is sudo on a file system with the 'nosuid'
        option set or an NFS file system without root privileges?
-             sudo was not run with root privileges.  The sudo binary has the
-             proper owner and permissions but it still did not run with root
-             privileges.  The most common reason for this is that the file
-             system the sudo binary is located on is mounted with the ‘nosuid’
-             option or it is an NFS file system that maps uid 0 to an
-             unprivileged uid.
+           sudo was not run with root privileges.  The sudo binary has the
+           proper owner and permissions but it still did not run with root
+           privileges.  The most common reason for this is that the file
+           system the sudo binary is located on is mounted with the ‘nosuid’
+           option or it is an NFS file system that maps uid 0 to an
+           unprivileged uid.
 
        fatal error, unable to load plugins
-             An error occurred while loading or initializing the plugins
-             specified in sudo.conf(5).
+           An error occurred while loading or initializing the plugins
+           specified in sudo.conf(5).
 
        invalid environment variable name
-             One or more environment variable names specified via the -E
-             option contained an equal sign (‘=’).  The arguments to the -E
-             option should be environment variable names without an associated
-             value.
+           One or more environment variable names specified via the -E option
+           contained an equal sign (‘=’).  The arguments to the -E option
+           should be environment variable names without an associated value.
 
        no password was provided
-             When sudo tried to read the password, it did not receive any
-             characters.  This may happen if no terminal is available (or the
-             -S option is specified) and the standard input has been
-             redirected from /dev/null.
+           When sudo tried to read the password, it did not receive any
+           characters.  This may happen if no terminal is available (or the -S
+           option is specified) and the standard input has been redirected
+           from /dev/null.
 
        a terminal is required to read the password
-             sudo needs to read the password but there is no mechanism
-             available for it to do so.  A terminal is not present to read the
-             password from, sudo has not been configured to read from the
-             standard input, the -S option was not used, and no askpass helper
-             has been specified either via the sudo.conf(5) file or the
-             SUDO_ASKPASS environment variable.
+           sudo needs to read the password but there is no mechanism available
+           for it to do so.  Remote commands run via ssh(1) do not have a
+           terminal available by default; passing the -t option to ssh(1) will
+           cause it to allocate a terminal which should allow sudo to read the
+           password.  To allow sudo to run local commands without a terminal,
+           the -S option can be used to read a password from the standard
+           input, or an askpass helper can be configured via either the
+           sudo.conf(5) file or by setting the SUDO_ASKPASS environment
+           variable.
 
        no writable temporary directory found
-             sudoedit was unable to find a usable temporary directory in which
-             to store its intermediate files.
+           sudoedit was unable to find a usable temporary directory in which
+           to store its intermediate files.
 
        The “no new privileges” flag is set, which prevents sudo from running
        as root.
-             sudo was run by a process that has the Linux “no new privileges”
-             flag is set.  This causes the set-user-ID bit to be ignored when
-             running an executable, which will prevent sudo from functioning.
-             The most likely cause for this is running sudo within a container
-             that sets this flag.  Check the documentation to see if it is
-             possible to configure the container such that the flag is not
-             set.
+           sudo was run by a process that has the Linux “no new privileges”
+           flag is set.  This causes the set-user-ID bit to be ignored when
+           running an executable, which will prevent sudo from functioning.
+           The most likely cause for this is running sudo within a container
+           that sets this flag.  Check the documentation to see if it is
+           possible to configure the container such that the flag is not set.
 
        sudo must be owned by uid 0 and have the setuid bit set
-             sudo was not run with root privileges.  The sudo binary does not
-             have the correct owner or permissions.  It must be owned by the
-             root user and have the set-user-ID bit set.
+           sudo was not run with root privileges.  The sudo binary does not
+           have the correct owner or permissions.  It must be owned by the
+           root user and have the set-user-ID bit set.
 
        sudoedit is not supported on this platform
-             It is only possible to run sudoedit on systems that support
-             setting the effective user-ID.
+           It is only possible to run sudoedit on systems that support setting
+           the effective user-ID.
 
        timed out reading password
-             The user did not enter a password before the password timeout (5
-             minutes by default) expired.
+           The user did not enter a password before the password timeout (5
+           minutes by default) expired.
 
        you do not exist in the passwd database
-             Your user-ID does not appear in the system passwd database.
+           Your user-ID does not appear in the system passwd database.
 
        you may not specify environment variables in edit mode
-             It is only possible to specify environment variables when running
-             a command.  When editing a file, the editor is run with the
-             user's environment unmodified.
+           It is only possible to specify environment variables when running a
+           command.  When editing a file, the editor is run with the user's
+           environment unmodified.
 
 SEE ALSO
        su(1), stat(2), login_cap(3), passwd(5), sudo.conf(5), sudo_plugin(5),
@@ -797,8 +785,17 @@ CAVEATS
        generally safe).
 
 BUGS
-       If you believe you have found a bug in sudo, you can submit a bug
-       report at https://bugzilla.sudo.ws/
+       If you believe you have found a bug in sudo, you can either file a bug
+       report in the sudo bug database, https://bugzilla.sudo.ws/, or open an
+       issue at https://github.com/sudo-project/sudo/issues.  If you would
+       prefer to use email, messages may be sent to the sudo-workers mailing
+       list, https://www.sudo.ws/mailman/listinfo/sudo-workers (public) or
+       <sudo@sudo.ws> (private).
+
+       Please do not report security vulnerabilities through public GitHub
+       issues, Bugzilla or mailing lists.  Instead, report them via email to
+       <Todd.Miller@sudo.ws>.  You may encrypt your message with PGP if you
+       would like, using the key found at https://www.sudo.ws/dist/PGPKEYS.
 
 SUPPORT
        Limited free support is available via the sudo-users mailing list, see
@@ -812,4 +809,4 @@ DISCLAIMER
        See the LICENSE.md file distributed with sudo or
        https://www.sudo.ws/about/license/ for complete details.
 
-Sudo 1.9.13p2                  January 16, 2023                        SUDO(8)
+Sudo 1.9.17p2                    June 7, 2025                          SUDO(8)

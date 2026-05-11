@@ -8,9 +8,10 @@ SYNOPSIS
           [-A algo | --algorithm algo] [--brief] [--color=when]
           [--changed-group-format GFMT] [--ed] [--expand-tabs] [--forward-ed]
           [--ignore-all-space] [--ignore-case] [--ignore-space-change]
-          [--initial-tab] [--minimal] [--no-ignore-file-name-case] [--normal]
-          [--rcs] [--show-c-function] [--starting-file] [--speed-large-files]
-          [--strip-trailing-cr] [--tabsize number] [--text] [--unified]
+          [--initial-tab] [--minimal] [--no-dereference]
+          [--no-ignore-file-name-case] [--normal] [--rcs] [--show-c-function]
+          [--starting-file] [--speed-large-files] [--strip-trailing-cr]
+          [--tabsize number] [--text] [--unified]
           [-I pattern | --ignore-matching-lines pattern]
           [-F pattern | --show-function-line pattern]
           [-L label | --label label] file1 file2
@@ -20,18 +21,19 @@ SYNOPSIS
           [-L label | --label label] [--brief] [--color=when]
           [--changed-group-format GFMT] [--ed] [--expand-tabs] [--forward-ed]
           [--ignore-all-space] [--ignore-case] [--ignore-space-change]
-          [--initial-tab] [--minimal] [--no-ignore-file-name-case] [--normal]
-          [--paginate] [--rcs] [--show-c-function] [--speed-large-files]
-          [--starting-file] [--strip-trailing-cr] [--tabsize number] [--text]
-          -C number | -context number file1 file2
+          [--initial-tab] [--minimal] [--no-dereference]
+          [--no-ignore-file-name-case] [--normal] [--paginate] [--rcs]
+          [--show-c-function] [--speed-large-files] [--starting-file]
+          [--strip-trailing-cr] [--tabsize number] [--text]
+          -C number | --context number file1 file2
      diff [-aBbdiltw] [-A algo | --algorithm algo]
           [-I pattern | --ignore-matching-lines pattern] [--brief]
           [--color=when] [--changed-group-format GFMT] [--ed] [--expand-tabs]
           [--forward-ed] [--ignore-all-space] [--ignore-case]
           [--ignore-space-change] [--initial-tab] [--minimal]
-          [--no-ignore-file-name-case] [--normal] [--paginate] [--rcs]
-          [--show-c-function] [--speed-large-files] [--starting-file]
-          [--strip-trailing-cr] [--tabsize number] [--text]
+          [--no-dereference] [--no-ignore-file-name-case] [--normal]
+          [--paginate] [--rcs] [--show-c-function] [--speed-large-files]
+          [--starting-file] [--strip-trailing-cr] [--tabsize number] [--text]
           -D string | --ifdef string file1 file2
      diff [-aBbdilpTtw] [-A algo | --algorithm algo]
           [-I pattern | --ignore-matching-lines pattern]
@@ -39,29 +41,30 @@ SYNOPSIS
           [-L label | --label label] [--brief] [--color=when]
           [--changed-group-format GFMT] [--ed] [--expand-tabs] [--forward-ed]
           [--ignore-all-space] [--ignore-case] [--ignore-space-change]
-          [--initial-tab] [--minimal] [--no-ignore-file-name-case] [--normal]
-          [--paginate] [--rcs] [--show-c-function] [--speed-large-files]
-          [--starting-file] [--strip-trailing-cr] [--tabsize number] [--text]
+          [--initial-tab] [--minimal] [--no-dereference]
+          [--no-ignore-file-name-case] [--normal] [--paginate] [--rcs]
+          [--show-c-function] [--speed-large-files] [--starting-file]
+          [--strip-trailing-cr] [--tabsize number] [--text]
           -U number | --unified number file1 file2
      diff [-aBbdilNPprsTtw] [-c | -e | -f | -n | -q | -u]
           [-A algo | --algorithm algo] [--brief] [--color=when]
           [--changed-group-format GFMT] [--context] [--ed] [--expand-tabs]
           [--forward-ed] [--ignore-all-space] [--ignore-case]
           [--ignore-space-change] [--initial-tab] [--minimal] [--new-file]
-          [--no-ignore-file-name-case] [--normal] [--paginate] [--rcs]
-          [--recursive] [--report-identical-files] [--show-c-function]
-          [--speed-large-files] [--strip-trailing-cr] [--tabsize number]
-          [--text] [--unidirectional-new-file] [--unified]
+          [--no-dereference] [--no-ignore-file-name-case] [--normal]
+          [--paginate] [--rcs] [--recursive] [--report-identical-files]
+          [--show-c-function] [--speed-large-files] [--strip-trailing-cr]
+          [--tabsize number] [--text] [--unidirectional-new-file] [--unified]
           [-I pattern | --ignore-matching-lines pattern]
           [-F pattern | --show-function-line pattern]
           [-L label | --label label] [-S name | --starting-file name]
           [-X file | --exclude-from file] [-x pattern | --exclude pattern]
           dir1 dir2
-     diff [-aBbditwW] [--color=when] [--expand-tabs] [--ignore-all-blanks]
+     diff [-aBbditwW] [--color=when] [--expand-tabs] [--ignore-all-space]
           [--ignore-blank-lines] [--ignore-case] [--minimal]
-          [--no-ignore-file-name-case] [--strip-trailing-cr]
-          [--suppress-common-lines] [--tabsize number] [--text] [--width]
-          -y | --side-by-side file1 file2
+          [--no-dereference] [--no-ignore-file-name-case]
+          [--strip-trailing-cr] [--suppress-common-lines] [--tabsize number]
+          [--text] [--width] -y | --side-by-side file1 file2
      diff [--help] [--version]
 
 DESCRIPTION
@@ -235,18 +238,17 @@ DESCRIPTION
              listing difficult to interpret.  This option will preserve the
              original source's indentation.
 
-     -w --ignore-all-blanks
+     -w --ignore-all-space
              Is similar to -b --ignore-space-change but causes whitespace
              (blanks and tabs) to be totally ignored.  E.g., “if ( a == b )”
              will compare equal to “if(a==b)”.
 
      -W number --width number
              Output at most number columns when using side by side format.
-             The default value is 130.  Note that unless
-
-     -t      was specified, diff will always align the second column to a tab
-             stop, so values of --width smaller than approximately five times
-             the value of --tabsize may yield surprising results.
+             The default value is 130.  Note that unless -t was specified,
+             diff will always align the second column to a tab stop, so values
+             of --width smaller than approximately five times the value of
+             --tabsize may yield surprising results.
 
      --changed-group-format GFMT
              Format input groups in the provided
@@ -259,6 +261,9 @@ DESCRIPTION
 
      --ignore-file-name-case
              ignore case when comparing file names
+
+     --no-dereference
+             do not follow symbolic links
 
      --no-ignore-file-name-case
              do not ignore case when comparing file names (default)
@@ -427,4 +432,4 @@ HISTORY
      libdiff was imported from the Game of Trees version control system and
      default algorithm was changed to Myers for FreeBSD 15.
 
-macOS 26.0                       March 7, 2024                      macOS 26.0
+macOS 26.4                      January 7, 2025                     macOS 26.4

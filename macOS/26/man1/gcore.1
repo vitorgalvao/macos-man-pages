@@ -1,7 +1,7 @@
 GCORE(1)                    General Commands Manual                   GCORE(1)
 
 NAME
-     gcore – get core images of running processes
+     gcore – get a core image of a running process
 
 SYNOPSIS
      gcore [-v] [-s] [-b size] [-x content] [-o path | -c pathformat] pid
@@ -57,11 +57,20 @@ DESCRIPTION
            U           The uid of the process being dumped, converted to a
                        string.
 
+           G           The gid of the process being dumped, converted to a
+                       string.
+
            P           The pid of the process being dumped, converted to a
                        string.
 
-           T           The time when the core file was taken, converted to ISO
-                       8601 format.
+           T           The time when the core file was created, converted to
+                       ISO 8601 format.
+
+           t           The time when the core file was created, converted to
+                       seconds since the epoch.
+
+           H           The hostname of the system, determined from the
+                       kern.hostname MIB.
 
            %           Output a percent character.
 
@@ -103,4 +112,4 @@ CAVEATS
      different platform, or after any of the components have been updated, may
      make productive debugging far more difficult.
 
-Darwin                         November 21, 2024                        Darwin
+Darwin                           July 10, 2025                          Darwin

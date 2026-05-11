@@ -4,21 +4,28 @@ NAME
      uptime – show how long system has been running
 
 SYNOPSIS
-     uptime
+     uptime [--libxo]
 
 DESCRIPTION
      The uptime utility displays the current time, the length of time the
      system has been up, the number of users, and the load average of the
      system over the last 1, 5, and 15 minutes.
 
+     The following options are available:
+
+     --libxo
+             Generate output via libxo(3) in a selection of different human
+             and machine readable formats.  See xo_options(7) for details on
+             command line arguments.
+
 EXAMPLES
            $ uptime
            11:23AM  up  3:01, 8 users, load averages: 21.09, 15.43, 12.79
 
 SEE ALSO
-     w(1)
+     w(1), libxo(3), xo_options(7)
 
 HISTORY
      The uptime command appeared in 3.0BSD.
 
-macOS 26.0                      August 18, 2020                     macOS 26.0
+macOS 26.4                    September 11, 2025                    macOS 26.4

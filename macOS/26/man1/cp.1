@@ -47,9 +47,10 @@ DESCRIPTION
      -a    Archive mode.  Same as -RpP.  Preserves structure and attributes of
            files but not directory structure.
 
-     -c    copy files using clonefile(2).  Note that if clonefile(2) is not
-           supported for the target filesystem, then cp will fallback to using
-           copyfile(2) instead to ensure the copy still succeeds.
+     -c    copy files using clonefile(2).  Note that if the source and target
+           are on different filesystems, or the target filesystem does not
+           support cloning, cp will fallback to using copyfile(2) instead to
+           ensure the copy still succeeds.
 
      -f    For each existing destination pathname, remove it and create a new
            file, without prompting for confirmation regardless of its
@@ -188,4 +189,4 @@ STANDARDS
 HISTORY
      A cp command appeared in Version 1 AT&T UNIX.
 
-macOS 26.0                      March 28, 2024                      macOS 26.0
+macOS 26.4                     September 2, 2025                    macOS 26.4

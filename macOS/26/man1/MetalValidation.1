@@ -21,6 +21,7 @@ SYNOPSIS
      MTL_SHADER_VALIDATION_RESOURCE_USAGE
      MTL_SHADER_VALIDATION_FAIL_MODE
      MTL_SHADER_VALIDATION_REPORT_TO_STDERR
+     MTL_SHADER_VALIDATION_REPORT_ALLOCATION_STACK_TRACE
 
 DESCRIPTION
      Unless otherwise noted all environment variables listed must be set
@@ -240,5 +241,13 @@ ENVIRONMENT
            Setting this value to any value other than "0" will redirect shader
            validation error messages to stderr. This is useful if there is any
            issue with the OS logging mechanism.
+
+     MTL_SHADER_VALIDATION_REPORT_ALLOCATION_STACK_TRACE
+           Defaults to "0"
+           If this value is set to any non-zero value, shader validation will
+           log the stack trace of the buffer that triggered a shader
+           validation error in the error message. This may help identify where
+           the faulting buffer was allocated.
+           Note that this stack trace may not always be available.
 
 Darwin                             05/03/20                             Darwin

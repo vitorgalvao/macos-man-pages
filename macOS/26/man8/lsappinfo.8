@@ -10,12 +10,14 @@ SYNOPSIS
 COMMON COMMANDS
        •   front Show the front application.
 
-       •   find [ key=value ]+
+       •   find [ --includeExitedApplications] [ key=value ]+
            Show the ASN of all applications which have the given key/value
            present in their application information. For key the actual
            CFString value for the key can be used, or any of the aliases
            described below under Key Strings. For value, see the rules below
-           under Key Values.
+           under Key Values.  If -includeExitedApplicationsthen also include
+           any matches for applications which have exited but still have
+           running child applications or coalition procesess.
 
        •   info [-only information-item-key] [-app app-specifier]
            [-long][app-specifier]

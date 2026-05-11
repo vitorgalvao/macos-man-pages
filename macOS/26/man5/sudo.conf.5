@@ -63,6 +63,10 @@ DESCRIPTION
 
            Plugin sudoers_policy sudoers.so
 
+       On AIX systems, the plugin may be either a shared object ending in
+       ‘.so’ or an archive file containing a shared object ending in ‘.a’ with
+       the name of the shared object in parentheses at the end.
+
        Starting with sudo 1.8.5, any additional parameters after the path are
        passed as arguments to the plugin's open function.  For example, to
        override the compile-time default sudoers file mode:
@@ -91,7 +95,7 @@ DESCRIPTION
        plugin.  To maintain compatibility with sudo.conf files from older sudo
        versions, if sudoers is configured as the security policy, it will be
        used as an audit plugin as well.  This guarantees that the logging
-       behavior will be consistnet with that of sudo versions 1.9.0 and below.
+       behavior will be consistent with that of sudo versions 1.9.0 and below.
 
        For more information on the sudo plugin architecture, see the
        sudo_plugin(5) manual.
@@ -108,11 +112,11 @@ DESCRIPTION
        will be disabled.  Disabling Path settings is only supported in sudo
        version 1.8.16 and higher.
 
-       The following plugin-agnostic paths may be set in the /privat
-       e/etc/sudo.conf file:
+       The following plugin-agnostic paths may be set in the
+       /private/etc/sudo.conf file:
 
        askpass
-             The fully qualified path to a helper program used to read the
+             The fully-qualified path to a helper program used to read the
              user's password when no terminal is available.  This may be the
              case when sudo is executed from a graphical (as opposed to text-
              based) application.  The program specified by askpass should
@@ -134,33 +138,46 @@ DESCRIPTION
              Solaris.
 
        intercept
-             The fully-qualified path to a shared library containing a
-             wrappers for the execve(2), execl(3), execle(3), execlp(3),
-             execv(3), execvp(3), execvpe(3), and system(3) library functions
-             that intercepts attempts to run further commands and performs a
-             policy check before allowing them to be executed.  This is used
-             to implement the intercept functionality on systems that support
-             LD_PRELOAD or its equivalent.  The default value is
+             The path to a shared library containing wrappers for the
+             execve(2), execl(3), execle(3), execlp(3), execv(3), execvp(3),
+             execvpe(3), and system(3) library functions that intercepts
+             attempts to run further commands and performs a policy check
+             before allowing them to be executed.  This is used to implement
+             the intercept and log_subcmds functionality on systems that
+             support LD_PRELOAD or the equivalent.
+
+             The intercept path may be set to either a single fully-qualified
+             path, or, for systems that support separate LD_PRELOAD
+             environment variables for 32-bit and 64-bit executables, it may
+             optionally be set to two fully-qualified paths separated by a
+             colon (‘:’).  The first path should be the 32-bit version and the
+             second the 64-bit version.  This two-path form is currently only
+             supported on AIX and Solaris systems.  The default value is
              /usr/local/libexec/sudo/sudo_intercept.so.
 
        noexec
-             The fully-qualified path to a shared library containing wrappers
-             for the execve(2), execl(3), execle(3), execlp(3), exect(3),
-             execv(3), execveat(3), execvP(3), execvp(3), execvpe(3),
-             fexecve(3), popen(3), posix_spawn(3), posix_spawnp(3), system(3),
-             and wordexp(3) library functions that prevent the execution of
+             The path to a shared library containing wrappers for the
+             execve(2), execl(3), execle(3), execlp(3), exect(3), execv(3),
+             execveat(3), execvP(3), execvp(3), execvpe(3), fexecve(3),
+             popen(3), posix_spawn(3), posix_spawnp(3), system(3), and
+             wordexp(3) library functions that prevent the execution of
              further commands.  This is used to implement the noexec
-             functionality on systems that support LD_PRELOAD or its
-             equivalent.  The default value is disabled.
+             functionality on systems that support LD_PRELOAD or the
+             equivalent.
+
+             The noexec path may be set to either a single fully-qualified
+             path, or, for systems that support separate LD_PRELOAD
+             environment variables for 32-bit and 64-bit executables, it may
+             optionally be set to two fully-qualified paths separated by a
+             colon (‘:’).  The first path should be the 32-bit version and the
+             second the 64-bit version.  This two-path form is currently only
+             supported on AIX and Solaris systems.  The default value is
+             disabled.
 
        plugin_dir
              The default directory to use when searching for plugins that are
-             specified without a fully qualified path name.  The default value
+             specified without a fully-qualified path name.  The default value
              is /usr/local/libexec/sudo.
-
-       sesh  The fully-qualified path to the sesh binary.  This setting is
-             only used when sudo is built with SELinux support.  The default
-             value is /usr/local/libexec/sudo/sesh.
 
    Other settings
        The sudo.conf file also supports the following front-end settings:
@@ -220,9 +237,9 @@ DESCRIPTION
                    groups can be time consuming when querying a network-based
                    group database.  Most operating systems provide an
                    efficient method of performing such queries.  Currently,
-                   sudo supports efficient group queries on AIX, BSD, HP-UX,
-                   Linux, macOS, and Solaris.  This is the default behavior on
-                   macOS in sudo 1.9.6 and higher.
+                   sudo supports efficient group queries on AIX, BSD, Linux,
+                   macOS, and Solaris.  This is the default behavior on macOS
+                   in sudo 1.9.6 and higher.
 
              adaptive
                    Only query the group database if the static group list
@@ -276,6 +293,11 @@ DESCRIPTION
        objects is subsystem@priority but a third-party plugin is free to use a
        different format so long as it does not include a comma (‘,’).
 
+       On AIX systems, a Debug line will match a plugin specified as either
+       the name of an SVR4-style shared object file ending in ‘.so’, an
+       archive file ending in ‘.a’, or an archive file ending in ‘.a’ with the
+       name of the shared object in parentheses.
+
        Examples:
 
            Debug sudo /var/log/sudo_debug all@warn,plugin@info
@@ -288,6 +310,12 @@ DESCRIPTION
        would log all debugging statements, regardless of level, for the
        sudo_intercept.so shared library that implements sudo's intercept
        functionality on some systems.
+
+           Debug sudoers.so /var/log/sudoers_debug all@debug
+
+       would log all debugging statements, regardless of level, for the
+       sudoers plugin.  See sudoers(5) for the full list of subsystems
+       supported by the sudoers plugin.
 
        As of sudo 1.8.12, multiple Debug entries may be specified per program.
        Older versions of sudo only support a single Debug entry per program.
@@ -350,12 +378,11 @@ DESCRIPTION
        The sudoers(5) plugin includes support for additional subsystems.
 
 FILES
-       /privat                   e/etc/sudo.conf sudo front-end configuration
+       /private/etc/sudo.conf    sudo front-end configuration
 
 EXAMPLES
        #
-       # Default /privat
-       e/etc/sudo.conf file
+       # Default /private/etc/sudo.conf file
        #
        # Sudo plugins:
        #   Plugin plugin_name plugin_path plugin_options ...
@@ -398,11 +425,11 @@ EXAMPLES
        # Sudo command interception:
        #   Path intercept /path/to/sudo_intercept.so
        #
-       # Path to a shared library containing replacements for the execv()
-       # and execve() library functions that perform a policy check to verify
-       # the command is allowed and simply return an error if not.  This is
-       # used to implement the "intercept" functionality on systems that
-       # support LD_PRELOAD or its equivalent.
+       # Path to a shared library containing replacements for the execv(),
+       # execve() and fexecve() library functions, which perform a policy
+       # check to verify whether the command is allowed and simply return
+       # an error if it is not.  This is used to implement the "intercept"
+       # functionality on systems that support LD_PRELOAD or its equivalent.
        #
        # The compiled-in value is usually sufficient and should only be changed
        # if you rename or move the sudo_intercept.so file.
@@ -428,7 +455,7 @@ EXAMPLES
        #   Path plugin_dir /path/to/plugins
        #
        # The default directory to use when searching for plugins that are
-       # specified without a fully qualified path name.
+       # specified without a fully-qualified path name.
        #
        #Path plugin_dir /usr/local/libexec/sudo
 
@@ -500,8 +527,17 @@ AUTHORS
        people who have contributed to sudo.
 
 BUGS
-       If you believe you have found a bug in sudo, you can submit a bug
-       report at https://bugzilla.sudo.ws/
+       If you believe you have found a bug in sudo.conf, you can either file a
+       bug report in the sudo bug database, https://bugzilla.sudo.ws/, or open
+       an issue at https://github.com/sudo-project/sudo/issues.  If you would
+       prefer to use email, messages may be sent to the sudo-workers mailing
+       list, https://www.sudo.ws/mailman/listinfo/sudo-workers (public) or
+       <sudo@sudo.ws> (private).
+
+       Please do not report security vulnerabilities through public GitHub
+       issues, Bugzilla or mailing lists.  Instead, report them via email to
+       <Todd.Miller@sudo.ws>.  You may encrypt your message with PGP if you
+       would like, using the key found at https://www.sudo.ws/dist/PGPKEYS.
 
 SUPPORT
        Limited free support is available via the sudo-users mailing list, see
@@ -515,4 +551,4 @@ DISCLAIMER
        See the LICENSE.md file distributed with sudo or
        https://www.sudo.ws/about/license/ for complete details.
 
-Sudo 1.9.13p2                  January 16, 2023                   SUDO.CONF(5)
+Sudo 1.9.17p2                  November 6, 2023                   SUDO.CONF(5)

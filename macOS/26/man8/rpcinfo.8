@@ -69,7 +69,9 @@ GENERIC OPTIONS
 
      -T netid
              Specify the netid to use. Supported netids are “udp”, “tcp”,
-             “udp6”, and “tcp6”.
+             “udp6”, and “tcp6”.  If netid is not specified, the system will
+             attempt netids in the following order: “tcp”, “udp”, “tcp6”, and
+             finally “udp6”.
 
      seconds
              Timeout used in creating client handles and the client calls to
@@ -217,4 +219,4 @@ BUGS
      register itself with the portmapper; rpcinfo cannot be used to make RPC
      calls to the NFS server on hosts running such releases.
 
-macOS 26.0                     November 14, 2012                    macOS 26.0
+macOS 26.4                     November 14, 2012                    macOS 26.4

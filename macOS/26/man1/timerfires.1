@@ -4,21 +4,33 @@ NAME
      timerfires – analyze timers as they fire
 
 SYNOPSIS
-     timerfires [-t timeout] [-p pid | -n name] [-s]
+     timerfires [-s] [-v] [-g] [-t timeout-secs] -a | -p pid | -n process-name
 
 DESCRIPTION
      The timerfires utility lists timers as they fire.
 
      The options are as follows:
 
-     -t timeout    Run only for timeout seconds; then exit.
+     -s            Show call stacks for "sleep"-type timers.
+
+     -v            Show verbose output where applicable (e.g., additional
+                   details for CoreFoundation timers).
+
+     -g            Aggregate timer output, showing counts instead of
+                   individual timer fires.
+
+     -t timeout-secs
+                   Run only for timeout-secs seconds; then exit.
+
+     -a            Analyze all timers without filtering by process.  It is an
+                   error to specify -a with either -p or -n.
 
      -p pid        Analyze only timers from the process with process ID pid.
+                   It is an error to specify -p with either -a or -n.
 
-     -n name       Analyze only timers from processes with name name.  It is
-                   an error to specify both -p and -n.
-
-     -s            Show call stacks for "sleep"-type timers.
+     -n process-name
+                   Analyze only timers from processes with name process-name.
+                   It is an error to specify -n with either -a or -p.
 
 SAMPLE USAGE
      timerfires -n MyApp -s -t 10
@@ -26,4 +38,4 @@ SAMPLE USAGE
      timerfires will run for ten seconds, displaying timer data for all
      instances of processes named "MyApp", including stacks.
 
-OS X                             May 20, 2013                             OS X
+OS X                           January 11, 2026                           OS X

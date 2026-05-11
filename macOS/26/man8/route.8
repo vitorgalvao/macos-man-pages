@@ -53,8 +53,8 @@ DESCRIPTION
            route [-n] flush [family]
 
      If the flush command is specified, route will ``flush'' the routing
-     tables of all gateway entries.  When the address family may is specified
-     by any of the -osi, -xns, -atalk, -inet6, or -inet modifiers, only routes
+     tables of all gateway entries.  When the address family is specified by
+     any of the -osi, -xns, -atalk, -inet6, or -inet modifiers, only routes
      having destinations with addresses in the delineated family will be
      deleted.
 
@@ -98,7 +98,7 @@ DESCRIPTION
      with a unique interface.  This modifier is required in order to
      manipulate route entries marked with the RTF_IFSCOPE flag.
 
-     The optional modifier -link specify that all subsequent addresses are
+     The optional modifier -link specifies that all subsequent addresses are
      specified as link-level addresses, and the names must be numeric
      specifications rather than symbolic names.
 
@@ -162,21 +162,19 @@ DESCRIPTION
      routing messages that match the modifiers.
 
      The optional modifier -ifindex takes an interface index or an interface
-     name to limit the display of routing messagges for that interface.
+     name to limit the display of routing messages for that interface.
 
      Optional modifiers of the monitor command may be used to select messages
      with some specific routing flags like: -blackhole -cloning -gateway -host
      -llinfo -local -reject -router -static -wascloned.
 
-     And the monitor command also may used to print messages for a given type
-     like: -add -delete -newmaddr.
+     And the monitor command may also be used to print messages for a given
+     type like: -add -delete -newmaddr.
 
-     The modifier may excludes message that match the modifier by adding the
+     The modifier may exclude messages that match the modifier by adding the
      prefix no to the modifier name.
 
 DIAGNOSTICS
-     The optional modifiers may also be used to select
-
      add [host | network ] %s: gateway %s flags %x  The specified route is
      being added to the tables.  The values printed are from the routing table
      entry supplied in the ioctl(2) call.  If the gateway address used was not
@@ -207,8 +205,25 @@ DIAGNOSTICS
 
      The route utility exits 0 on success, and >0 if an error occurs.
 
+EXAMPLES
+     Add a default IPv4 route through a gateway:
+
+           route add default 192.168.1.1
+
+     Add an IPv6 prefix route through a gateway:
+
+           route add -inet6 2001:db8::/32 2001:db8::1
+
+     Add an IPv6 prefix route directly to an interface:
+
+           route add -inet6 2001:db8:1234::/64 -interface en0
+
+     Delete an IPv6 route:
+
+           route delete -inet6 2001:db8:1234::/64
+
 SEE ALSO
-     netintro(4), route(4), arp(8),
+     netintro(4), route(4), arp(8)
 
 HISTORY
      The route command appeared in 4.2BSD.

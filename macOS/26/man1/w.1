@@ -19,12 +19,12 @@ DESCRIPTION
      logged on, the time since the user last typed anything, and the name and
      arguments of the current process.
 
-     The options are as follows:
+     The following options are available:
 
      --libxo
              Generate output via libxo(3) in a selection of different human
-             and machine readable formats.  See xo_parse_args(3) for details
-             on command line arguments.
+             and machine readable formats.  See xo_options(7) for details on
+             command line arguments.
 
      -h      Suppress the heading.
 
@@ -42,7 +42,7 @@ COMPATIBILITY
      The -M, -N, -d, -f, -l, -s, and -w flags are no longer supported.
 
 SEE ALSO
-     finger(1), ps(1), uptime(1), who(1), libxo(3), xo_parse_args(3)
+     finger(1), ps(1), uptime(1), who(1), libxo(3), xo_options(7)
 
 HISTORY
      The w command appeared in 3.0BSD.
@@ -71,6 +71,4 @@ BUGS
      background jobs.  It will sometimes find a background job instead of the
      right one.
 
-     Long hostnames and IPv6 addresses may be truncated.
-
-macOS 26.0                      August 24, 2020                     macOS 26.0
+macOS 26.4                    September 11, 2025                    macOS 26.4

@@ -21,8 +21,8 @@ SYNOPSIS
                [--log-file-format=format] [--max-delete=MAX] [--max-size=size]
                [--min-size=size] [--modify-window=sec] [--no-implied-dirs]
                [--no-motd] [--numeric-ids] [--partial] [--partial-dir=DIR]
-               [--password-file=pwfile] [--port=service] [--progress=VER]
-               [--protocol] [--read-batch=file] [--remove-source-files]
+               [--password-file=pwfile] [--port=service] [--progress]
+               [--protocol=VER] [--read-batch=file] [--remove-source-files]
                [--rsync-path=program] [--safe-links] [--size-only]
                [--sockopts=sockopts] [--specials] [--stats] [--suffix=suffix]
                [--super] [--timeout=seconds]
@@ -92,7 +92,7 @@ DESCRIPTION
              compatibility.
 
      --bwlimit limit
-             Limit transfer speed to limit bytes/sec.  The limit may also
+             Limit transfer speed to limit kilobytes/sec.  The limit may also
              contain any of the suffixes described in the --max-size
              definition of size.
 
@@ -367,7 +367,7 @@ DESCRIPTION
              Use directory as an alternate base directory to compare files
              against on the destination machine.  If file in directory is
              found and identical to the sender's file, the file will be
-             hardlinked.  Multiple --compare-dest directories may be provided.
+             hardlinked.  Multiple --link-dest directories may be provided.
              If directory is a relative path, it is relative to the
              destination directory.
 
@@ -588,7 +588,8 @@ DESCRIPTION
                    SO_REUSEPORT May not be available on all systems.
 
      -S, --sparse
-             Attempt to efficiently handle sparse files.
+             Attempt to efficiently handle sparse files.  Note that attempting
+             to combine -S and --inplace will result in an error.
 
      --specials
              Also transfer fifo and unix domain socket files.
@@ -737,9 +738,9 @@ PATTERNS AND RULES
            merge        .             Merge rules in from a file
            dir-merge    :             Merge rules in from a per-directory file
            hide         H             Hide a file from the transfer
-           show         S             “not hide a file from the transfer”
+           show         S             Do not hide a file from the transfer
            protect      P             Protect a file from deletion
-           risk         R             “not protect a file from deletion”
+           risk         R             Do not protect a file from deletion
            clear        !             Clear the current filter list
 
      The following rule modifiers are supported for the “exclude” and
@@ -901,4 +902,4 @@ HISTORY
 AUTHORS
      The openrsync utility was written by Kristaps Dzonsons <kristaps@bsd.lv>.
 
-macOS 26.0                    September 17, 2025                    macOS 26.0
+macOS 26.4                       May 11, 2026                       macOS 26.4

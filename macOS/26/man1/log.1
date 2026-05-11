@@ -12,19 +12,23 @@ SYNOPSIS
      log collect [--output path] [--start date/time] [--size num [k|m]]
          [--last num [m|h|d]]
          [--device | --device-name name | --device-udid UDID]
-         [--predicate predicate]
+         [--predicate predicate] [--directory directory]
 
      log config [--reset | --status] [--mode mode(s)]
          [--subsystem name [--category name]] [--process pid]
+
+     log emit [--type type] [--subsystem name] [--category name]
+         [--signpost-id id] [--public] message
 
      log erase [--all] [--ttl]
 
      log show [--archive archive | --file file] [--predicate filter]
          [--process pid | process] [--source]
          [--style default | compact | json | ndjson | syslog]
-         [--color auto | always | none] [--start date/time] [--end date/time]
-         [--[no-]info] [--[no-]debug] [--[no-]pager] [--[no-]signpost]
-         [--[no-]loss] [--last time [m|h|d]] [--timezone local | timezone]
+         [--color auto | always | none] [--directory directory]
+         [--start date/time] [--end date/time] [--[no-]info] [--[no-]debug]
+         [--[no-]pager] [--[no-]signpost] [--[no-]loss] [--last time [m|h|d]]
+         [--timezone local | timezone]
 
      log stats [--archive archive] [--sort events | bytes]
          [--count count | all] [--start date/time] [--end date/time]
@@ -102,6 +106,19 @@ DESCRIPTION
                                    an archive.  Example: "--predicate
                                    "process=='kernel.development'"
 
+                  --directory directory
+                                   Collect content from the provided log store
+                                   directory, instead of the local log store.
+                                   The directory must contain a system logging
+                                   database similar to what can be found in
+                                   /var/db/diagnostics, and its parent
+                                   directory must also contain an uuidtext
+                                   directory similar to what can be found in
+                                   /var/db/uuidtext.  This option is useful to
+                                   collect logs from a system partition that
+                                   is not booted, e.g. from a recovery
+                                   environment or an external drive.
+
      config       Configure, reset or read settings for the logging system.
                   config commands can act system-wide or on a subsystem.  If
                   not specified, system-wide is assumed.  If subsystem is
@@ -138,6 +155,51 @@ DESCRIPTION
                                    persist: {off | default | info | debug} The
                                    persist mode is a hierarchy, e.g. debug
                                    implies debug, info, and default.
+
+     emit         Emit a log message to the system logging facility.  This
+                  command is primarily used for testing and debugging
+                  purposes, allowing generation of log entries with specific
+                  types, subsystems, and categories.
+
+                  --type type        Specify the type of log message to emit.
+                                     Valid types are: debug, info, default,
+                                     error, fault, signpost-event,
+                                     signpost-begin, and signpost-end.  If not
+                                     specified, default is used.
+
+                  --subsystem name   Specify the subsystem identifier for the
+                                     log message.  The subsystem is typically
+                                     a reverse DNS name identifying the
+                                     component generating the log message
+                                     (e.g., com.example.myapp).  If not
+                                     specified, the message uses
+                                     OS_LOG_DEFAULT.
+
+                  --category name    Specify the category within the
+                                     subsystem.  Categories provide additional
+                                     organization within a subsystem.  This
+                                     option does nothing unless used with
+                                     --subsystem.  If a subsystem is specified
+                                     but no category is provided, an empty
+                                     category is used.
+
+                  --signpost-id id   Specify the signpost identifier for
+                                     interval operations.  This option is used
+                                     with signpost-begin and signpost-end
+                                     types to create matching pairs for
+                                     performance measurement intervals.  The
+                                     id should be a positive integer that
+                                     uniquely identifies the interval.  If not
+                                     specified for signpost operations,
+                                     OS_SIGNPOST_ID_EXCLUSIVE is used.
+
+                  --public           Emit the message publicly.
+
+                  message            The text message to emit to the logging
+                                     system.  This is a required argument and
+                                     should be the last argument on the
+                                     command line.  By default, this is
+                                     emitted as a private string.
 
      erase        Delete selected log data from the system.  If no arguments
                   are specified, the main log datastore and inflight log data
@@ -227,6 +289,19 @@ DESCRIPTION
                                    By default, log will disable colorized
                                    output when not directed to a terminal,
                                    unless overidden using always.
+
+                  --directory directory
+                                   Reads content from the provided log store
+                                   directory, instead of the local log store.
+                                   The directory must contain a system logging
+                                   database similar to what can be found in
+                                   /var/db/diagnostics, and its parent
+                                   directory must also contain an uuidtext
+                                   directory similar to what can be found in
+                                   /var/db/uuidtext.  This option is useful to
+                                   display logs from a system partition that
+                                   is not booted, e.g. from a recovery
+                                   environment or an external drive.
 
                   --start date/time
                                    Shows content starting from the provided
@@ -436,6 +511,47 @@ DESCRIPTION
                   --skip-uuid-purge       Skip purging unused UUIDs from the
                                           resulting archive.
 
+EXAMPLES
+     View recent log messages:
+
+           log show --last 1h
+
+     Stream live log messages:
+
+           log stream
+
+     Emit a test log message:
+
+           log emit "Test message"
+
+     Emit an error message with subsystem information:
+
+           log emit --type error --subsystem com.example.app "An error occurred"
+
+     Emit a signpost event for performance analysis:
+
+           log emit --type signpost-event "Performance marker reached"
+
+     Begin a signpost interval for performance measurement:
+
+           log emit --type signpost-begin --signpost-id 42 "Operation started"
+
+     End a signpost interval for performance measurement:
+
+           log emit --type signpost-end --signpost-id 42 "Operation completed"
+
+     Begin and end a signpost interval with subsystem information:
+
+           log emit --subsystem com.example.app --category performance \
+                    --type signpost-begin --signpost-id 123 "Database query started"
+           log emit --subsystem com.example.app --category performance \
+                    --type signpost-end --signpost-id 123 "Database query completed"
+
+     Show help for a specific command:
+
+           log help show
+           log help emit
+
 PREDICATE-BASED FILTERING
      Using predicate-based filters via the --predicate option allows users to
      focus on messages based on the provided filter criteria.  For detailed
@@ -511,6 +627,10 @@ SHORTHAND-BASED FILTERING
      message, m, or omit   The pattern within the message text.
 
      process, p            The name of the process that originated the event.
+
+     processImagePath, pip
+                           The full path of the process that originated the
+                           event.
 
      pid                   The identifier of the process that originated the
                            event.

@@ -451,9 +451,16 @@ DESCRIPTION
                          available starting with API version 1.2.
 
                    tty=string
-                         The path to the user's terminal device.  If the user
-                         has no terminal device associated with the session,
-                         the value will be empty, as in ‘tty=’.
+                         The path to the user's terminal device, if one
+                         exists.  This entry is only present if the user has a
+                         terminal device associated with the session.
+
+                   ttydev=dev_t
+                         The number of the user's terminal device, if one
+                         exists, formatted as a long long value.  This entry
+                         is only present if the user has a terminal device
+                         associated with the session.  Only available starting
+                         with API version 1.22.
 
                    uid=uid_t
                          The real user-ID of the user invoking sudo.
@@ -1023,7 +1030,7 @@ DESCRIPTION
                          present, this is will be used by the sudo front-end
                          to determine which elements of the argv_out vector
                          are files to be edited.  The ‘--’ element must
-                         immediately precede the first file to be editied.  If
+                         immediately precede the first file to be edited.  If
                          sudoedit_nfiles is not specified, the sudo front-end
                          will use the position of the ‘--’ element to
                          determine where the file list begins.  Only available
@@ -2733,7 +2740,7 @@ DESCRIPTION
            const struct sudo_conv_message msgs[],
            struct sudo_conv_reply replies[], struct sudo_conv_callback *callback);
 
-       typedef int (*sudo_printf_t)(int msg_type, const char *fmt, ...);
+       typedef int (*sudo_printf_t)(int msg_type, const char * restrict fmt, ...);
 
        To use the conversation() function, the plugin must pass an array of
        struct sudo_conv_message and struct sudo_conv_reply.  There must be a
@@ -3076,6 +3083,9 @@ PLUGIN API CHANGELOG
        Version 1.21 (sudo 1.9.13)
              The sudoedit_nfiles entry was added to the command_info list.
 
+       Version 1.22 (sudo 1.9.16)
+             The ttydev entry was added to the user_info list.
+
 SEE ALSO
        sudo.conf(5), sudoers(5), sudo(8)
 
@@ -3090,8 +3100,17 @@ AUTHORS
        people who have contributed to sudo.
 
 BUGS
-       If you believe you have found a bug in sudo, you can submit a bug
-       report at https://bugzilla.sudo.ws/
+       If you believe you have found a bug in sudo_plugin, you can either file
+       a bug report in the sudo bug database, https://bugzilla.sudo.ws/, or
+       open an issue at https://github.com/sudo-project/sudo/issues.  If you
+       would prefer to use email, messages may be sent to the sudo-workers
+       mailing list, https://www.sudo.ws/mailman/listinfo/sudo-workers
+       (public) or <sudo@sudo.ws> (private).
+
+       Please do not report security vulnerabilities through public GitHub
+       issues, Bugzilla or mailing lists.  Instead, report them via email to
+       <Todd.Miller@sudo.ws>.  You may encrypt your message with PGP if you
+       would like, using the key found at https://www.sudo.ws/dist/PGPKEYS.
 
 SUPPORT
        Limited free support is available via the sudo-users mailing list, see
@@ -3105,4 +3124,4 @@ DISCLAIMER
        See the LICENSE.md file distributed with sudo or
        https://www.sudo.ws/about/license/ for complete details.
 
-Sudo 1.9.13p2                  January 18, 2023                 SUDO_PLUGIN(5)
+Sudo 1.9.17p2                   August 14, 2024                 SUDO_PLUGIN(5)

@@ -7,9 +7,9 @@ SYNOPSIS
      dyld_info [-arch arch-name] [-platform] [-segments] [-linked_dylibs]
                [-inits] [-exports] [-imports] [-objc] [-fixups]
                [-fixup_chains] [-fixup_chain_details] [-function_starts]
-               [-symbolic_fixups] [-opcodes] [-uuid] [-disassemble]
-               [-section segment-name section-name] [-all_sections]
-               [-section_bytes segment-name section-name]
+               [-symbolic_fixups] [-opcodes] [-uuid] [-dlopens] [-dlsyms]
+               [-disassemble] [-section segment-name section-name]
+               [-all_sections] [-section_bytes segment-name section-name]
                [-all_sections_bytes] [-validate_only] [-no_validate] file(s)
 
 DESCRIPTION
@@ -86,6 +86,14 @@ DESCRIPTION
      -function_variants
              Display info about function variants in the binary.
 
+     -dlopens
+             Display calls to dlopen() in the binary and if possible the path
+             string used.
+
+     -dlsyms
+             Display calls to dlsym() in the binary and if possible the symbol
+             string used.
+
      -disassemble
              Display a disassemble of all code sections.
 
@@ -120,4 +128,4 @@ DESCRIPTION
 SEE ALSO
      otool(1) nm(1)
 
-Darwin                           July 24, 2024                          Darwin
+Darwin                            May 5, 2025                           Darwin
