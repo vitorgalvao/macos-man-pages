@@ -1,0 +1,913 @@
+GROFF(7)               Miscellaneous Information Manual               GROFF(7)
+
+
+
+NAME
+       groff - a short reference for the GNU roff language
+
+DESCRIPTION
+       The name groff stands for GNU roff and is the free implementation of
+       the roff type-setting system.  See roff(7) for a survey and the
+       background of the groff system.
+
+       This document gives only short descriptions of the predefined roff
+       language elements as used in groff.  Both the classical features and
+       the groff extensions are provided.
+
+       Historically, the roff language was called troff.  groff is compatible
+       with the classical system and provides proper extensions.  So in GNU,
+       the terms roff, troff, and groff language could be used as synonyms.
+       However troff slightly tends to refer more to the classical aspects,
+       whereas groff emphasizes the GNU extensions, and roff is the general
+       term for the language.
+
+       This file is only a short version of the complete documentation that is
+       found in the groff info(1) file, which contains more detailed, actual,
+       and concise information.
+
+       The general syntax for writing groff documents is relatively easy, but
+       writing extensions to the roff language can be a bit harder.
+
+       The roff language is line-oriented.  There are only two kinds of lines,
+       control lines and text lines.  The control lines start with a control
+       character, by default a period or a single quote all other lines are
+       text lines.
+
+       Control lines represent commands, optionally with arguments.  They have
+       the following syntax.  The leading control character can be followed by
+       a command name; arguments, if any, are separated by blanks from the
+       command name and among themselves, for example,
+
+              \)\$*
+
+       For indentation, any number of space or tab characters can be inserted
+       between the leading control character and the command name, but the
+       control character must be on the first position of the line.
+
+       Text lines represent the parts that will be printed.  They can be
+       modified by escape sequences, which are recognized by a leading
+       backslash These are in-line or even in-word formatting elements or
+       functions.  Some of these take arguments separated by single quotes
+       others are regulated by a length encoding introduced by an open
+       parenthesis or enclosed in brackets and
+
+       The roff language provides flexible instruments for writing language
+       extension, such as macros.  When interpreting macro definitions, the
+       roff system enters a special operating mode, called the copy mode.
+
+       The copy mode behavior can be quite tricky, but there are some rules
+       that ensure a safe usage.
+
+       1.     Printable backslashes must be denoted as \[rs]\$1\$2 To be more
+              precise, \[rs]\$1\$2 represents the current escape character.
+              To get a backslash glyph, use \[rs]\$1\$2 or \[rs]\$1\$2
+
+       2.     Double all backslashes.
+
+       3.     Begin all text lines with the special non-spacing character
+              \[rs]\$1\$2
+
+       This does not produce the most efficient code, but it should work as a
+       first measure.  For better strategies, see the groff info file and
+       groff_tmac(5).
+
+       Reading roff source files is easier, just reduce all double backslashes
+       to a single one in all macro definitions.
+
+GROFF ELEMENTS
+       The roff language elements add formatting information to a text file.
+       The fundamental elements are predefined commands and variables that
+       make roff a full-blown programming language.
+
+       There are two kinds of roff commands, possibly with arguments.
+       Requests are written on a line of their own starting with a dot or a
+       whereas Escape sequences are in-line functions and in-word formatting
+       elements starting with a backslash
+
+       The user can define her own formatting commands using the \$* request.
+       These commands are called macros, but they are used exactly like
+       requests.  Macro packages are pre-defined sets of macros written in the
+       groff language.  A user's possibilities to create escape sequences
+       herself is very limited, only special characters can be mapped.
+
+       The groff language provides several kinds of variables with different
+       interfaces.  There are pre-defined variables, but the user can define
+       her own variables as well.
+
+       String variables store character sequences.  They are set with the \$*
+       request and retrieved by the \[rs]\$1\$2 escape sequences.  Strings can
+       have variables.
+
+       Register variables can store numerical values, numbers with a scale
+       unit, and occasionally string-like objects.  They are set with the \$*
+       request and retrieved by the \[rs]\$1\$2 escape sequences.
+
+       Environments allow the user to temporarily store global formatting
+       parameters like line length, font size, etc. for later reuse.  This is
+       done by the \$* request.
+
+       Fonts are identified either by a name or by an internal number.  The
+       current font is chosen by the \$* request or by the \[rs]\$1\$2 escape
+       sequences.  Each device has special fonts, but the following fonts are
+       available for all devices.  R is the standard font Roman.  B is its
+       bold counterpart.  The italic font is called I and is available
+       everywhere, but on text devices it is displayed as an underlined Roman
+       font.  For the graphical output devices, there exist constant-width
+       pendants of these fonts, CR, CI, and CB.  On text devices, all
+       characters have a constant width anyway.
+
+       Moreover, there are some advanced roff elements.  A diversion stores
+       information into a macro for later usage.  A trap is a positional
+       condition like a certain number of lines from page top or in a
+       diversion or in the input.  Some action can be prescribed to be run
+       automatically when the condition is met.
+
+       More detailed information and examples can be found in the groff info
+       file.
+
+CONTROL CHARACTERS
+       There is a small set of characters that have a special controlling task
+       in certain conditions.
+
+       A dot is only special at the beginning of a line or after the
+              condition in the requests \$* \$* \$* and \$* There it is the
+              control character that introduces a request (or macro).  The
+              special behavior can be delayed by using the \[rs]\$1\$2 escape.
+              By using the \$* request, the control character can be set to a
+              different character, making the dot a non-special character.
+
+
+              In all other positions, it just means a dot character.  In text
+              paragraphs, it is advantageous to start each sentence at a line
+              of its own.
+
+       The single quote has two controlling tasks.
+              At the beginning of a line and in the conditional requests it is
+              the non-breaking control character.  That means that it
+              introduces a request like the dot, but with the additional
+              property that this request doesn't cause a linebreak.  By using
+              the \$* request, the non-break control character can be set to a
+              different character.
+
+
+              As a second task, it is the most commonly used argument
+              separator in some functional escape sequences (but any pair of
+              characters not part of the argument will work).  In all other
+              positions, it denotes the single quote or apostrophe character.
+              Groff provides a printable representation with the \[rs]\$1\$2
+              escape sequence.
+
+       The double quote is used to enclose arguments in requests, macros, and
+              strings.  In the \$* and \$* requests, a leading double quote in
+              the argument will be stripped off, making everything else
+              afterwards the string to be defined (enabling leading
+              whitespace).  The escaped double quote \[rs]\$1\$2 introduces a
+              comment.  Otherwise, it is not special.  Groff provides a
+              printable representation with the \[rs]\$1\$2 escape sequence.
+
+       The backslash usually introduces an escape sequence (this can be
+              changed with the \$* request).  A printed version of the escape
+              character is the \[rs]\$1\$2 escape; a backslash glyph can be
+              obtained by \[rs]\$1\$2
+
+       The open parenthesis is only special in escape sequences when
+              introducing an escape name or argument consisting of exactly two
+              characters.  In groff, this behavior can be replaced by the []
+              construct.
+
+       The opening bracket is only special in groff escape sequences; there
+              it is used to introduce a long escape name or long escape
+              argument.  Otherwise, it is non-special, e.g. in macro calls.
+
+       The closing bracket is only special in groff escape sequences; there
+              it terminates a long escape name or long escape argument.
+              Otherwise, it is non-special.
+
+       space  Space characters are only functional characters.  They separate
+              the arguments in requests, macros, and strings, and the words in
+              text lines.  They are subject to groff's horizontal spacing
+              calculations.  To get a defined space width, escape sequences
+              like (this is the escape character followed by a space),
+              \[rs]\$1\$2 \[rs]\$1\$2 or \[rs]\$1\$2 should be used.
+
+       newline
+              In text paragraphs, newlines mostly behave like space
+              characters.  Continuation lines can be specified by an escaped
+              newline, i.e., by specifying a backslash as the last character
+              of a line.
+
+       tab    If a tab character occurs during text the interpreter makes a
+              horizontal jump to the next pre-defined tab position.  There is
+              a sophisticated interface for handling tab positions.
+
+NUMERICAL EXPRESSIONS
+       A numerical value is a signed or unsigned integer or float with or
+       without an appended scaling indicator.  A scaling indicator is a one-
+       character abbreviation for a unit of measurement.  A number followed by
+       a scaling indicator signifies a size value.  By default, numerical
+       values do not have a scaling indicator, i.e., they are normal numbers.
+
+       The roff language defines the following scaling indicators.
+
+              c         Centimeter
+              i         Inch
+              P         Pica = 1/6 inch
+              p         Point = 1/72 inch
+              m         Em = the font size in points (width of letter `m')
+              M         100th of an Em
+              n         En = Em/2
+              u         Basic unit for actual output device
+              v         Vertical line space in basic units scaled
+                        point = 1/sizescale of a point (defined in font DESC
+                        file)
+              f         Scale by 65536.
+
+       Numerical expressions are combinations of the numerical values defined
+       above with the following arithmetical operators already defined in
+       classical troff.
+
+              +         Addition
+              -         Subtraction
+              *         Multiplication
+              /         Division
+              %         Modulo
+              =         Equals
+              ==        Equals
+              <         Less than
+              >         Greater than
+              <=        Less or equal
+              >=        Greater or equal
+              &         Logical and
+              :         Logical or
+              !         Logical not
+              (         Grouping of expressions
+              )         Close current grouping
+
+       Moreover, groff added the following operators for numerical
+       expressions:
+
+              The maximum of
+                        e1 and e2.
+              The minimum of
+                        e1 and e2.
+              Evaluate  e using c as the default scaling indicator.
+
+       For details see the groff info file.
+
+CONDITIONS
+       Conditions occur in tests raised by the \$* \$* and the \$* requests.
+       The following table characterizes the different types of conditions.
+
+              N         A numerical expression N yields true if its value is
+                        greater than 0.
+              !N        True if the value of I is 0.
+              's1's2'   True if string s1 is identical to string s2.
+              !'s1's2'  True if string s1 is not identical to string s2.
+              cch       True if there is a character ch available.
+              dname     True if there is a string, macro, diversion, or
+                        request called name.
+              e         Current page number is even.
+              o         Current page number is odd.
+              mname     True if there is a color called name.
+              n         Formatter is nroff.
+              rreg      True if there is a register named reg.
+              t         Formatter is troff.
+              Ffont     True if there exists a font named font.
+              Sstyle    True if a style named style has been registered.
+
+REQUESTS
+       This section provides a short reference for the predefined requests.
+       In groff, request and macro names can be arbitrarily long.  No
+       bracketing or marking of long names is needed.
+
+       Most requests take one or more arguments.  The arguments are separated
+       by space characters (no tabs!); there is no inherent limit for their
+       length or number.  An argument can be enclosed by a pair of double
+       quotes.  This is very handy if an argument contains space characters,
+       e.g., "arg with space" denotes a single argument.
+
+       Some requests have optional arguments with a different behaviour.  Not
+       all of these details are outlined here.  Refer to the groff info file
+       and groff_diff(7) for all details.
+
+       In the following request specifications, most argument names were
+       chosen to be descriptive.  Only the following denotations need
+       clarification.
+
+              c         denotes a single character.
+              font      a font either specified as a font name or a font
+                        number.
+              anything  all characters up to the end of the line or within
+                        \[rs]\$1\$2 and \[rs]\$1\$2
+              n         is a numerical expression that evaluates to an integer
+                        value.
+              N         is an arbitrary numerical expression, signed or
+                        unsigned.
+              ±N        has three meanings depending on its sign, described
+                        below.
+
+       If an expression defined as ±N starts with a sign the resulting value
+       of the expression will be added to an already existing value inherent
+       to the related request, e.g. adding to a number register.  If the
+       expression starts with a the value of the expression will be subtracted
+       from the request value.
+
+       Without a sign, N replaces the existing value directly.  To assign a
+       negative number either prepend 0 or enclose the negative number in
+       parentheses.
+
+   Request Short Reference
+       Empty line, ignored.  Useful for structuring documents.  Complete line
+       is a comment.  Print string on standard error, exit program.  Begin
+       line adjustment for output lines in current adjust mode.  Start line
+       adjustment in mode c (c=l,r,b,n).  Assign format c to register
+       (c=l,i,I,a,A).  Create alias name for register.  Create alias name for
+       request, string, macro, or diversion object.  Append to macro until ..
+       is encountered.  Append to macro until \$* is called.  Same as \$* but
+       with compatibility mode switched off during macro expansion.  Same as
+       \$* but with compatibility mode switched off during macro expansion.
+       Append to a macro whose name is contained in the string register macro
+       until .. is encountered.  Append to a macro indirectly.  macro and end
+       are string registers whose contents are interpolated for the macro name
+       and the end macro, respectively.  Same as \$* but with compatibility
+       mode switched off during macro expansion.  Same as \$* but with
+       compatibility mode switched off during macro expansion.  Append
+       anything to stringvar.  Same as \$* but with compatibility mode
+       switched off during string expansion.  Unformat ASCII characters,
+       spaces, and some escape sequences in diversion.  Print a backtrace of
+       the input on stderr.  Embolden font by N-1 units.  Embolden Special
+       Font S when current font is font.  Unset the blank line macro.  Set the
+       blank line macro to macro.  End current diversion.  Divert to macro,
+       omitting a partially filled line.  End current diversion.  Divert and
+       append to macro, omitting a partially filled line.  Eject current page
+       and begin new page.  Eject current page; next page number ±N.  Line
+       break.  Break and spread output line.  Same as \[rs]\$1\$2 Break out of
+       a while loop.  Reset no-break control character to Set no-break control
+       character to c.  Reset control character to Set control character to c.
+       Center the next input line.  Center following N input lines.  Copy
+       contents of file filename unprocessed to stdout or to the diversion.
+       Treat characters c1, c2, ... according to mode number.  Change trap
+       location to N .  Define character c as string anything.  Chop the last
+       character off macro, string, or diversion object.  Close the stream.
+       Enable colors.  If N is zero disable colors, otherwise enable them.
+       Map glyph name from to glyph name to while constructing a composite
+       glyph name.  Finish the current iteration of a while loop.  Enable
+       compatibility mode.  If N is zero disable compatibility mode, otherwise
+       enable it.  Set constant character width mode for font to N/36 ems with
+       em M.  Continuous underline in nroff, like \$* in troff.  End current
+       diversion.  Divert and append to macro.  Define or redefine macro until
+       .. is encountered.  Define or redefine macro until \$* is called.  Same
+       as \$* but with compatibility mode switched off during macro expansion.
+       Same as \$* but with compatibility mode switched off during macro
+       expansion.  Define or redefine a color with name color.  scheme can be
+       rgb, cym, cymk, gray, or grey.  component can be single components
+       specified as fractions in the range 0 to 1 (default scaling
+       indicator \)\$* as a string of two-digit hexadecimal color components
+       with a leading #, or as a string of four-digit hexadecimal components
+       with two leading #.  The color default can't be redefined.  Define or
+       redefine a macro whose name is contained in the string register macro
+       until .. is encountered.  Define or redefine a macro indirectly.  macro
+       and end are string registers whose contents are interpolated for the
+       macro name and the end macro, respectively.  Same as \$* but with
+       compatibility mode switched off during macro expansion.  Same as \$*
+       but with compatibility mode switched off during macro expansion.  End
+       current diversion.  Divert to macro .  Interpret \$* with compatibility
+       mode disabled.  Set stringvar to anything.  Same as \$* but with
+       compatibility mode switched off during string expansion.  Set diversion
+       trap to position N (default scaling indicator \)\$* Reset escape
+       character to Set escape character to c.  Restore escape character saved
+       with \$* Save current escape character.  Else part for if-else (\$*
+       request.  The macro will be run after the end of input.  Turn off
+       escape character mechanism.  Switch to previous environment.  Push down
+       environment number or name env and switch to it.  Copy the contents of
+       environment env to the current environment.  No pushing or popping.
+       Exit from roff processing.  Return to previous font family.  Set the
+       current font family to name.  Disable field mechanism.  Set field
+       delimiter to a and pad character to space.  Set field delimiter to a
+       and pad character to b.  Define fallback character c as string
+       anything.  Set fill color to previous fill color.  Set fill color to c.
+       Fill output lines.  Flush output buffer.  Mount font on position n.
+       Mount font with long external name to short internal name on position
+       n.  Define fallback character c for font f as string anything.  Reset
+       list of special fonts for font to be empty.  When the current font is
+       font, then the fonts s1, s2, ... will be special.  Return to previous
+       font.  Same as \$* or \$* Change to font name or number font; same as
+       \)\$* escape sequence.  Translate font1 to font2.  Set glyph color to
+       previous glyph color.  Set glyph color to c.  Remove additional
+       hyphenation indicator character.  Set up additional hyphenation
+       indicator character c.  Set the hyphenation code of character c1 to
+       code1, that of c2 to code2, etc.  Set the current hyphenation language
+       to lang.  Set the maximum number of consecutive hyphenated lines to n.
+       Read hyphenation patterns from file.  Append hyphenation patterns from
+       file.  Set input mapping for \$* List of words with exceptional
+       hyphenation.  Switch to hyphenation mode N.  Set the hyphenation margin
+       to n (default scaling indicator \)\$* Set the hyphenation space to n.
+       If cond then anything else goto \$* If cond then anything; otherwise do
+       nothing.  Ignore text until .. is encountered.  Ignore text until \$*
+       Change to previous indent value.  Change indent according to ±N
+       (default scaling indicator \)\$* Set an input-line count trap for the
+       next N lines.  Same as \$* but count lines interrupted with \[rs]\$1\$2
+       as one line.  Enable pairwise kerning.  If n is zero, disable pairwise
+       kerning, otherwise enable it.  Remove leader repetition character.  Set
+       leader repetition character to c.  Write the length of the string
+       anything in register.  Enable line-tabs mode (i.e., calculate tab
+       positions relative to output line).  If n is zero, disable line-tabs
+       mode, otherwise enable it.  Set input line number to N.  Set input line
+       number to N and filename to file.  Ligature mode on if N>0.  Change to
+       previous line length.  Set line length according to ±N (default size
+       \)\$* default scaling indicator_\)\$* Change to the previous value of
+       additional intra-line skip.  Set additional intra-line skip value to N,
+       i.e., N-1 blank lines are inserted after each text output line.  Length
+       of title (default scaling indicator \)\$* Margin character off.  Print
+       character c after each text line at actual distance from right margin.
+       Set margin character to c and distance to N from right margin (default
+       scaling indicator \)\$* Mark current vertical position in register.
+       The same as the .so request except that file is searched in the tmac
+       directories.  No output-line adjusting.  Need a one-line vertical
+       space.  Need N vertical space (default scaling indicator \)\$* No
+       filling or adjusting of output-lines.  No hyphenation.  Number mode
+       off.  In line number mode, set number, multiple, spacing, and indent.
+       Do not number next line.  Do not number next N lines.  Always execute
+       anything.  Define or modify register using ±N with auto-increment M.
+       Make the built-in condition n true and t false.  Turn no-space mode on.
+       Immediately jump to end of current file.  Next file.  Open \)\$* \$*
+       for writing and associate the stream named \)\$* \$* with it.  Like \$*
+       but append to it.  Output vertical distance that was saved by the \$*
+       request.  Emit string directly to intermediate output, allowing leading
+       whitespace if string starts with (which will be stripped off).  Reset
+       page number character to Page number character.  Pipe output to program
+       (nroff only).  Set page length to default \)\$* The current page length
+       is stored in \)\$* \$* Change page length to ±N (default scaling
+       indicator \)\$* Print macro names and sizes (number of blocks of 128
+       bytes).  Print only total of sizes of macros (number of 128 bytes
+       blocks).  Next page number N.  Print the names and contents of all
+       currently defined number registers on stderr.  Change to previous page
+       offset.  The current page offset is available in \)\$* \$* Page offset
+       N.  Return to previous point-size.  Point size; same as \)\$* Get the
+       bounding box of a PostScript image filename.  This behaves like the \$*
+       request except that input comes from the standard output of command.
+       Print the names and positions of all traps (not including input line
+       traps and diversion traps) on stderr.  Change to previous post-vertical
+       line spacing.  Change post-vertical line spacing according to ±N
+       (default scaling indicator \)\$* Remove the definitions of characters
+       c1, c2, ... Read insertion.  Return from a macro.  Return twice, namely
+       from the macro at the current level and from the macro one level
+       higher.  Remove the definitions of characters c1, c2, ... for font f.
+       Right justify the next n input lines.  Remove request, macro, or string
+       name.  Rename request, macro, or string old to new.  Rename register
+       reg1 to reg2.  Remove register.  Restore spacing; turn no-space mode
+       off.  Return (upward only) to marked vertical place (default scaling
+       indicator \)\$* Define global fallback character c as string anything.
+       Reset soft hyphen character to \[rs]\$1\$2 Set the soft hyphen
+       character to c.  In a macro, shift the arguments by n positions.  Set
+       available font sizes similar to the sizes command in a DESC file.
+       Include source file.  Skip one line vertically.  Space vertical
+       distance N up or down according to sign of N (default scaling
+       indicator \)\$* Reset global list of special fonts to be empty.  Fonts
+       s1, s2, etc. are special and will be searched for characters not in the
+       current font.  Toggle the spread warning on and off without changing
+       its value.  Emit a warning if each space in an output line is widened
+       by limit or more (default scaling indicator \)\$* Space-character size
+       set to N/12 of the spacewidth in the current font.  Space-character
+       size set to N/12 and sentence space size set to M/12 of the spacewidth
+       in the current font (=1/3 em).  Associate style with font position n.
+       Replace the string named xx with the substring defined by the indices
+       n1 and n2.  Save \)\$* of vertical space.  Save the vertical distance N
+       for later output with \$* request.  Execute program command-line.  Set
+       tabs after every position that is a multiple of N (default scaling
+       indicator \)\$* Set tabs at positions n1, n2, \)\$* nn, then set tabs
+       at nn+r1, nn+r2, \)\$* nn+rn, then at nn+rn+r1, nn+rn+r2, \)\$*
+       nn+rn+rn, and so on.  Remove tab repition character.  Set tab
+       repetition character to c.  Temporary indent next line (default scaling
+       indicator \)\$* Enable track kerning for font.  Three-part title.
+       Print anything on terminal (UNIX standard message output).  Print
+       anything on terminal (UNIX standard message output), allowing leading
+       whitespace if anything starts with (which will be stripped off).
+       Similar to \$* without emitting a final newline.  Translate a to b, c
+       to d, etc. on output.  Transparently output the contents of file
+       filename.  This is the same as the \$* request except that the asciify
+       request will use the character code (if any) before the character
+       translation.  This is the same as the \$* request except that the
+       translations do not apply to text that is transparently throughput into
+       a diversion with \[rs]\$1\$2 Make the built-in condition t true and n
+       false.  Underline font set to font (to be switched to by \$* Underline
+       (italicize in troff) N input lines.  Unformat space characters and
+       tabs, preserving font information in diversion.  Enable vertical
+       position traps if n is non-zero, disable them otherwise.  Change to
+       previous vertical base line spacing.  Set vertical base line spacing
+       according to ±N (default scaling indicator \)\$* Default value is \)\$*
+       Set warnings code to n.  Set scaling indicator used in warnings to si.
+       Remove (first) trap at position N.  Set location trap; negative means
+       from page bottom.  While condition cond is true, accept anything as
+       input.  Write anything to the stream named stream.  Similar to \$*
+       without emitting a final newline.  Write contents of macro or string xx
+       to the stream named stream.
+
+       Besides these standard groff requests, there might be further macro
+       calls.  They can originate from a macro package (see roff(7) for an
+       overview) or from a preprocessor.
+
+       Preprocessor macros are easy to be recognized.  They enclose their code
+       into a pair of characteristic macros.
+
+                      ┌─────────────┬─────────────┬────────────┐
+                      │preprocessor │ start macro │  end macro │
+                      ┝━━━━━━━━━━━━━┿━━━━━━━━━━━━━┿━━━━━━━━━━━━┥
+                      │    eqn      │     .PS     │    .PE     │
+                      │    grap     │     .G1     │    .G2     │
+                      │    grn      │     .GS     │    .GE     │
+                      │    pic      │     .PS     │    .PE     │
+                      │   refer     │     .R1     │    .R2     │
+                      │   soelim    │    none     │    none    │
+                      │    tbl      │     .TS     │    .TE     │
+                      └─────────────┴─────────────┴────────────┘
+ESCAPE SEQUENCES
+       Escape sequences are in-line language elements usually introduced by a
+       backslash and followed by an escape name and sometimes by a required
+       argument.  Input processing is continued directly after the escaped
+       character or the argument resp. without an intervening separation
+       character.  So there must be a way to determine the end of the escape
+       name and the end of the argument.
+
+       This is done by enclosing names (escape name and arguments consisting
+       of a variable name) by a pair of brackets [name] and constant arguments
+       (number expressions and characters) by apostrophes (ASCII 0x27) like
+       ’constant’.
+
+       There are abbreviations for short names.  Two character escape names
+       can be specified by an opening parenthesis like \[rs]\$1\$2 without a
+       closing counterpart.  And all one-character names different from the
+       special characters and can even be specified without a marker in the
+       form \[rs]\$1\$2
+
+       Constant arguments of length 1 can omit the marker apostrophes, too,
+       but there is no two-character analogue.
+
+       While 1-character escape sequences are mainly used for in-line
+       functions and system related tasks, the 2-letter names following the
+       \[rs]\$1\$2 construct are used for special characters predefined by the
+       roff system.  Escapes sequences with names of more than two characters
+       \)\$* denote user defined named characters (see the \$* request).
+
+   Single Character Escapes
+       Beginning of a comment.  Everything up to the end of the line is
+       ignored.  Everything up to and including the next newline is ignored.
+       This is interpreted in copy mode.  This is like \[rs]\$1\$2 except that
+       the terminating newline is ignored as well.  The string stored in the
+       string variable with 1-character name s.  The string stored in the
+       string variable with 2-character name st.  The string stored in the
+       string variable with arbitrary length name stringvar, taking arg1,
+       arg2, ... as arguments.  The name by which the current macro was
+       invoked.  The \$* request can make a macro have more than one name.
+       Macro or string argument with 1-place number x, where x is a digit
+       between 1 and 9.  Macro or string argument with 2-digit number xy.
+       Macro or string argument with number nexp, where nexp is a numerical
+       expression evaluating to an integer ≥1.  In a macro or string, the
+       concatenation of all the arguments separated by spaces.  In a macro or
+       string, the concatenation of all the arguments with each surrounded by
+       double quotes, and separated by spaces.  reduces to a single backslash;
+       useful to delay its interpretation as escape character in copy mode.
+       For a printable backslash, use \[rs]\$1\$2 or even better \[rs]\$1\$2
+       to be independent from the current escape character.  The acute accent
+       ´; same as \[rs]\$1\$2 Unescaped: apostrophe, right quotation mark,
+       single quote (ASCII 0x27).  The grave accent `; same as \[rs]\$1\$2
+       Unescaped: left quote, backquote (ASCII 0x60).  The - sign in the
+       current font.  An uninterpreted dot (period), even at start of line.
+       Default optional hyphenation character.  Transparent line indicator.
+       In a diversion, this will transparently embed anything in the
+       diversion.  anything is read in copy mode.  See also the escape
+       sequences \[rs]\$1\$2 and \[rs]\$1\$2 Unpaddable space-size space
+       character (no line break).  Digit width.  1/6 em narrow space
+       character; zero width in nroff.  1/12 em half-narrow space character;
+       zero width in nroff.  Non-printable, zero width character.  Like
+       \[rs]\$1\$2 except that it behaves like a character declared with the
+       cflags request to be transparent for the purposes of end of sentence
+       recognition.  Increases the width of the preceding character so that
+       the spacing between that character and the following character will be
+       correct if the following character is a roman character.  Modifies the
+       spacing of the following character so that the spacing between that
+       character and the preceding character will correct if the preceding
+       character is a roman character.  Unbreakable space that stretches like
+       a normal inter-word space when a line is adjusted.  Inserts a zero-
+       width break point (similar to \[rs]\$1\$2 but without a soft hyphen
+       character).  Ignored newline, for continuation lines.  Begin
+       conditional input.  End conditional input.  The special character with
+       2-character name sc, see section Special Characters.  The named
+       character (or rather glyph) with arbitrary length name name.  A
+       composite glyph with components comp1, comp2, ...  Non-interpreted
+       leader character.  If anything is acceptable as a name of a string,
+       macro, diversion, register, environment or font it expands to 1, and
+       to 0 otherwise.  Bracket building function.  If anything is acceptable
+       as a valid numeric expression it expands to 1, and to 0 otherwise.
+       Interrupt text processing.  The character called char; same as \)\$*
+       but compatible to other roff versions.  Forward (down) 1/2 em vertical
+       unit (1/2 line in nroff).  Draw a graphical element defined by the
+       characters in charseq; see groff info file for details.  Printable
+       version of the current escape character.  Equivalent to an escape
+       character, but is not interpreted in copy-mode.  Change to font with
+       1-character name or 1-digit number F.  Switch back to previous font.
+       Change to font with 2-character name or 2-digit number fo.  Change to
+       font with arbitrary length name or number expression font.  Switch back
+       to previous font.  Change to font family with 1-character name f.
+       Change to font family with 2-character name fm.  Change to font family
+       with arbitrary length name fam.  Switch back to previous font family.
+       Return format of register with name reg suitable for \$* Alternative
+       forms \)\$* and \)\$* Local horizontal motion; move right N (left if
+       negative).  Set height of current font to N.  Mark horizontal input
+       place in register with arbitrary length name reg.  Alternative forms
+       \)\$* and \)\$* Horizontal line drawing function (optionally using
+       character c).  Vertical line drawing function (optionally using
+       character c).  Change to color color.  Alternative forms \)\$* and
+       \)\$* Switch back to previous color.  Change filling color for closed
+       drawn objects to color color.  Alternative forms \)\$* and \)\$* Switch
+       to previous fill color.  The numerical value stored in the register
+       variable with the 1-character name r.  The numerical value stored in
+       the register variable with the 2-character name re.  The numerical
+       value stored in the register variable with arbitrary length name reg.
+       Typeset the character with code n in the current font, no special fonts
+       are searched.  Useful for adding characters to a font using the \$*
+       request.  Overstrike characters a, b, c, etc.  Disable glyph output.
+       Mainly for internal use.  Enable glyph output.  Mainly for internal
+       use.  Break and spread output line.  Reverse 1 em vertical motion
+       (reverse line in nroff).  The same as \$* name ±n.  Set the point size
+       to N scaled points.  Note the alternative forms \s±[N], \s'±N'\)\$*
+       \s±'N'\)\$* \)\$* \)\$* \s±(xy\)\$* \)\$* Same as \$* request.  Slant
+       output N degrees.  Non-interpreted horizontal tab.  Reverse (up) 1/2 em
+       vertical motion (1/2 line in nroff).  Local vertical motion; move down
+       N (up if negative).  The contents of the environment variable env.
+       Alternative forms \)\$* and \)\$* The width of the character sequence
+       string.  Extra line-space function (negative before, positive after).
+       Output string as device control function.  Output string variable or
+       macro name uninterpreted as device control function.  Alternative forms
+       \)\$* and \)\$* Print c with zero width (without spacing).  Print
+       anything and then restore the horizontal and vertical position;
+       anything may not contain tabs or leaders.
+
+       The escape sequences \[rs]\$1\$2 \[rs]\$1\$2 \[rs]\$1\$2 \[rs]\$1\$2
+       \[rs]\$1\$2 \[rs]\$1\$2 \[rs]\$1\$2 \[rs]\$1\$2 \[rs]\$1\$2 and \)\$*
+       are interpreted in copy mode.
+
+       Escape sequences starting with \[rs]\$1\$2 or \[rs]\$1\$2 do not
+       represent single character escape sequences, but introduce escape names
+       with two or more characters.
+
+       If a backslash is followed by a character that does not constitute a
+       defined escape sequence the backslash is silently ignored and the
+       character maps to itself.
+
+   Special Characters
+       Common special characters are predefined by escape sequences of the
+       form \(xy with characters x and y.  Some of these exist in the usual
+       font while most of them are only available in the special font.  Below
+       you'll find a selection of the most important glyphs; a complete list
+       can be found in groff_char(7).
+
+              Bullet sign Copyright Cent Double dagger Degree Dagger Printable
+              double quote Em-dash Hyphen Registered sign Printable backslash
+              character Section sign Underline character Identical Larger or
+              equal Less or equal Not equal Right arrow Left arrow Plus-minus
+              sign
+
+   Strings
+       Strings are defined by the \$* request and can be retrieved by the
+       \[rs]\$1\$2 escape sequence.
+
+       Strings share their name space with macros.  So strings and macros
+       without arguments are roughly equivalent; it is possible to call a
+       string like a macro and vice-versa, but this often leads to
+       unpredictable results.  The following strings are predefined in groff.
+
+       The name of the current output device as specified by the
+                 \)\$* command line option.
+
+REGISTERS
+       Registers are variables that store a value.  In groff, most registers
+       store numerical values (see section NUMERICAL EXPRESSIONS above), but
+       some can also hold a string value.
+
+       Each register is given a name.  Arbitrary registers can be defined and
+       set with the request \$* register.
+
+       The value stored in a register can be retrieved by the escape sequences
+       introduced by \[rs]\$1\$2
+
+       Most useful are predefined registers.  In the following the notation
+       name is used to refer to a register called \)\$* \$* to make clear that
+       we speak about registers.  Please keep in mind that the \)\$*
+       decoration is not part of the register name.
+
+   Read-only Registers
+       The following registers have predefined values that should not be
+       modified by the user (usually, registers starting with a dot a read-
+       only).  Mostly, they provide information on the current settings or
+       store results from request calls.
+
+       Number of arguments in the current macro or string.
+       Post-line extra line-space most recently utilized using
+                 \)\$*
+       Set to 1 in
+                 troff if option -A is used; always 1 in nroff.
+       Current input line number.
+       1 if compatibility mode is in effect, 0 otherwise.
+       The depth of the last character added to the current environment.
+                 It is positive if the character extends below the baseline.
+       The number of lines remaining to be centered, as set by the
+                 \$* request.
+       The height of the last character added to the current environment.
+                 It is positive if the character extends above the baseline.
+       1 if colors are enabled, 0 otherwise.
+       The skew of the last character added to the current environment.
+                 The skew of a character is how far to the right of the center
+                 of a character the center of an accent over that character
+                 should be placed.
+       Current vertical place in current diversion; equal to
+                 \)\$* \$*
+       The name or number of the current environment (string-valued).
+       Current font number.
+       The current font family (string-valued).
+       The current (internal) real font name (string-valued).
+       The number of the next free font position.
+       Always 1 in GNU troff.
+                 Macros should use it to test if running under groff.
+       Text base-line high-water mark on current page or diversion.
+       Available horizontal resolution in basic units.
+       The current font height as set with
+                 \$*
+       The current hyphenation language as set by the
+                 .hla request.
+       The number of immediately preceding consecutive hyphenated lines.
+       The maximum allowed number of consecutive hyphenated lines, as set by
+                 the \$* request.
+       The current hyphenation flags (as set by the
+                 \$* request).
+       The current hyphenation margin (as set by the
+                 \$* request).
+       The current hyphenation space (as set by the
+                 \$* request).
+       Current ident.
+       The indent that applies to the current output line.
+       Positive if last output line contains
+                 \[rs]\$1\$2
+       1 if pairwise kerning is enabled, 0 otherwise.
+       Current line length.
+       The current ligature mode (as set by the
+                 \$* request).
+       The current line-tabs mode (as set by the
+                 \$* request).
+       The line length that applies to the current output line.
+       The title length (as set by the
+                 \$* request).
+       The current drawing color (string-valued).
+       The current background color (string-valued).
+       Length of text portion on previous output line.
+       The amount of space that was needed in the last
+                 \$* request that caused a trap to be sprung.  Useful in
+                 conjunction with \)\$* \$*
+       1 if in no-space mode, 0 otherwise.
+       Current page offset.
+       Current page length.
+       1 during page ejection, 0 otherwise.
+       The number of the next page: either the value set by a
+                 \$* request, or the number of the current page plus 1.
+       The current pointsize in scaled points.
+       The last-requested pointsize in scaled points.
+       The current post-vertical line spacing.
+       The number of lines to be right-justified as set by the rj request.
+       Current point size as a decimal fraction.
+       The slant of the current font as set with
+                 \$*
+       The last requested pointsize in points as a decimal fraction
+                 (string-valued).
+       The value of the parameters set by the first argument of the
+                 \$* request.
+       The value of the parameters set by the second argument of the
+                 \$* request.
+       The current font style (string-valued).
+       Distance to the next trap.
+       Set to 1  if option -T is used.
+       A string representation of the current tab settings suitable for use
+                 as an argument to the \$* request.
+       The amount of vertical space truncated by the most recently sprung
+                 vertical position trap, or, if the trap was sprung by a \$*
+                 request, minus the amount of vertical motion produced by \$*
+                 In other words, at the point a trap is sprung, it represents
+                 the difference of what the vertical position would have been
+                 but for the trap, and what the vertical position actually is.
+                 Useful in conjunction with the \)\$* \$*
+       Equal to 1 in fill mode and 0 in nofill mode.
+       Equal to 1 in safer mode and 0 in unsafe mode.
+       Current vertical line spacing.
+       Available vertical resolution in basic units.
+       1  if vertical position traps are enabled, 0 otherwise.
+       Width of previous character.
+       The sum of the number codes of the currently enabled warnings.
+       The major version number.
+       The minor version number.
+       The revision number of groff.
+       Name of current diversion.
+
+   Writable Registers
+       The following registers can be read and written by the user.  They have
+       predefined default values, but these can be modified for customizing a
+       document.
+
+       Current page number.
+       Current input line number.
+       Character type (set by width function
+                 \[rs]\$1\$2
+       Maximal width of last completed diversion.
+       Height of last completed diversion.
+       Current day of week (1-7).
+       Current day of month (1-31).
+       The number of hours past midnight.
+                 Initialized at start-up.
+       Current horizontal position at input line.
+       Lower left x-coordinate (in PostScript units) of a given PostScript
+                 image (set by \$*
+       Lower left y-coordinate (in PostScript units) of a given PostScript
+                 image (set by \$*
+       Output line number.
+       The number of minutes after the hour.
+                 Initialized at start-up.
+       Current month (1-12).
+       Vertical position of last printed text base-line.
+       Like      \)\$* \$* but takes account of the heights and depths of
+                 characters.
+       Like      \)\$* \$* but takes account of the heights and depths of
+                 characters.
+       Depth of string below base line (generated by width function
+                 \[rs]\$1\$2
+       The number of seconds after the minute.
+                 Initialized at start-up.
+       Right skip width from the center of the last character in the
+                 \[rs]\$1\$2 argument.
+       If greater than 0, the maximum number of objects on the input stack.
+                 If ≤0 there is no limit, i.e., recursion can continue until
+                 virtual memory is exhausted.
+       The amount of horizontal space (possibly negative) that should be
+                 added to the last character before a subscript (generated by
+                 width function \[rs]\$1\$2
+       Height of string above base line (generated by width function
+                 \[rs]\$1\$2
+       The return value of the
+                 system() function executed by the last \$* request.
+       Upper right x-coordinate (in PostScript units) of a given PostScript
+                 image (set by \$*
+       Upper right y-coordinate (in PostScript units) of a given PostScript
+                 image (set by \$*
+       The current year (year 2000 compliant).
+       Current year minus 1900.
+                 For Y2K compliance use \)\$* \$* instead.
+
+COMPATIBILITY
+       The differences of the groff language in comparison to classical troff
+       as defined by [CSTR_#54] are documented in groff_diff(7).
+
+       The groff system provides a compatibility mode, see groff(1) on how to
+       invoke this.
+
+BUGS
+       Report bugs to the Include a complete, self-contained example that will
+       allow the bug to be reproduced, and say which version of groff you are
+       using.
+
+AUTHORS
+       Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software
+       Foundation, Inc.
+
+       This document is distributed under the terms of the FDL (GNU Free
+       Documentation License) version 1.1 or later.  You should have received
+       a copy of the FDL on your system, it is also available on-line at the
+
+       This document is part of groff, the GNU roff distribution.  It was
+       written by it is maintained by
+
+SEE ALSO
+       The main source of information for the groff language is the groff
+       info(1) file.  Besides the gory details, it contains many examples.
+
+       groff(1)
+              the usage of the groff program and pointers to the documentation
+              and availability of the groff system.
+
+       groff_diff(7)
+              the differences of the groff language as compared to classical
+              roff.  This is the authoritative document for the predefined
+              language elements that are specific to groff.
+
+       groff_char(7)
+              the predefined groff characters (glyphs).
+
+       groff_font(5)
+              the specification of fonts and the DESC file.
+
+       roff(7)
+              the history of roff, the common parts shared by all roff
+              systems, and pointers to further documentation.
+
+       [CSTR_#54]
+              — the bible for classical troff.
+
+
+
+Groff Version 1.19.2           16 February 2005                       GROFF(7)
