@@ -92,6 +92,49 @@ DESCRIPTION
              the total number of compressed pages that have been swapped out
              to disk.
 
+     If the system supports the ARM Memory Tagging Extension (MTE), then the
+     following values will additionally be displayed:
+
+     Pages tagged
+             the total number of virtual pages which have been assigned memory
+             tags.
+
+     Pages tagged resident
+             the number of tagged pages which are resident in memory.
+
+     Pages tagged compressed
+             the number of tagged pages which have been evicted to the
+             compressor.
+
+     Pages tag storage
+             the total number of physical pages which may be used to store
+             memory tags.
+
+     Pages tag storage holding tags
+             the number of physical pages which are currently being used to
+             store memory tags.
+
+     Pages tag storage free
+             the number of tag-storage pages which are unused.
+
+     Pages tag storage non-tag pageable
+             the number of tag-storage pages which are being used to store
+             pageable non-tag data.
+
+     Pages tag storage non-tag wired
+             the number of tag-storage pages which are being used to store
+             wired non-tag data.
+
+     Bytes of compressed tags
+             the (post-compression) size of memory tags currently held in the
+             compressor in bytes.
+
+     Tagged compressions
+             the number of tagged pages which have been compressed.
+
+     Tagged decompressions
+             the number of tagged pages which have been decompressed.
+
      If interval is not specified, then vm_stat displays all accumulated
      statistics along with the page size.
 
