@@ -1,0 +1,23 @@
+toolkitd(8)                 System Manager's Manual                toolkitd(8)
+
+NAME
+     toolkitd – Daemon for indexing various actions types across the system
+     into the ToolKit database
+
+SYNOPSIS
+     toolkitd
+
+DESCRIPTION
+     The toolkitd daemon indexes App Intents, SiriKit intents, shortcuts
+     bundled actions and more into the ToolKit database. This database is used
+     by various clients to discover and run available tools and actions.
+
+     The daemon is launched on-demand via XPC when an indexing request is
+     received.
+
+XPC SERVICE
+     toolkitd registers the Mach service com.apple.toolkitd.xpc and listens
+     for ToolKitIndexingRequest messages. Upon receiving a request, it
+     executes a pipeline of indexing steps to populate the tool database.
+
+macOS                          October 28, 2025                    toolkitd(8)

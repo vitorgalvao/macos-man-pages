@@ -1,0 +1,192 @@
+MEMINFO(1)                  General Commands Manual                 MEMINFO(1)
+
+NAME
+     meminfo – display physical memory usage breakdown
+
+SYNOPSIS
+     meminfo [--summary] [--zones] [--raw] [--all] [--quiet] [--csv path]
+             [--perfdata path] [--interval seconds] [--count n]
+             [--duration seconds]
+
+DESCRIPTION
+     meminfo displays a breakdown of physical memory usage by category.  By
+     default each category is printed as its own section: a header line with
+     the category's page count and size, followed by indented subcategory rows
+     whose percentage bars are relative to that category's total.  Any portion
+     of a category not covered by its subcategories is shown as an Unaccounted
+     row.  A final Physical Memory summary breaks the total down into the main
+     categories, and a Swap section follows.
+
+     The following options are available:
+
+     --summary           Show only the Physical Memory summary and the Swap
+                         section, omitting the per-category detail sections.
+
+     --zones             Expand the aggregate wired Zones row into one row per
+                         kernel zone.  This requires root privileges; without
+                         them, meminfo prints a warning and shows the
+                         aggregate Zones total instead.
+
+     --raw               Show raw metric names (e.g. anonymous_purgeable)
+                         instead of human-readable display names (e.g.
+                         Purgeable).
+
+     --all               Show all metrics, including those that are normally
+                         hidden when their value is zero (e.g. Secluded) or
+                         below 1 MB (wired sites), and overlapping subtotals
+                         that are normally excluded from the breakdown (e.g.
+                         Purgeable, Shared cache).  MTE-related metrics are
+                         also included regardless of hardware capability.
+
+     --quiet             Suppress summary output to stdout.  Useful when only
+                         CSV or perfdata output is desired.
+
+     --csv path          Write CSV output to path.  The first line is a header
+                         row; subsequent lines are data rows.  All memory
+                         values are in bytes.  Without --interval, a single
+                         data row is written.
+
+     --interval seconds  Sample repeatedly, sleeping seconds between samples.
+                         Fractional values are accepted (e.g. 0.5).
+
+                         In the default formatted mode, the screen is cleared
+                         before each sample.  In CSV mode, each sample is
+                         emitted as an additional data row after a single
+                         header.
+
+     --count n           Stop after n samples.  Requires --interval to have
+                         any effect; without it, only one sample is taken
+                         regardless.
+
+     --duration seconds  Stop after seconds have elapsed.  Requires --interval
+                         to have any effect.
+
+     --perfdata path     Write output to a perfdata file at path.  Each memory
+                         category is recorded as a separate metric in bytes.
+                         Individual wired sites (category=wired) and carveout
+                         regions (category=static_carveouts) are included as
+                         additional metrics.  When combined with --interval,
+                         each sample is written as a separate group in the
+                         same perfdata file.
+
+     When --interval is active, meminfo installs signal handlers for SIGINT
+     and SIGTERM.  Both --count and --duration may be specified together;
+     sampling stops when either limit is reached.
+
+MEMORY CATEGORIES
+     The following categories are displayed in the formatted output.  Together
+     they make up the Physical Memory summary.
+
+     Anonymous         Pageable memory allocated by applications that are not
+                       backed by a file.
+
+                       Active     The subset of anonymous pages on the active
+                                  queue.
+                       Inactive   The subset of anonymous pages on the
+                                  inactive queue.
+                       Purgeable  The subset of anonymous pages that the
+                                  system may reclaim without preserving
+                                  contents (i.e. VM_PURGABLE_VOLATILE).
+
+     Cached files      Pageable memory backed by files on disk (e.g. mapped
+                       files, shared libraries, caches).
+
+                       Active        The subset of file-backed pages on the
+                                     active queue.
+                       Inactive      The subset of file-backed pages on the
+                                     inactive queue.
+                       Speculative   Pages read speculatively from disk that
+                                     have not yet been referenced.
+                       Secluded      File-backed pages that are secluded.
+                                     Only shown when non-zero.
+                       Shared cache  Pages used by the shared cache (dyld
+                                     shared region).
+                       Executable    Pages containing executable code from
+                                     mapped binaries.
+
+     Compressor        Memory consumed by the in-memory compressor to store
+                       compressed data and, on MTE-capable systems, compressed
+                       tags.
+
+                       Compressed data  The subset of compressor pages holding
+                                        compressed page data (excluding tag
+                                        storage).
+                       Compressed tags  The bytes consumed by compressed tag
+                                        storage in the compressor.  Only shown
+                                        on MTE-capable systems.
+
+     Free              Memory not currently in use.
+
+                       Tag storage  Tag storage pages that are not currently
+                                    in use.  Only shown on MTE-capable
+                                    systems.
+
+     Wired             Memory that cannot be paged out or compressed (kernel
+                       data structures, IOSurfaces, etc.).  Individual kernel
+                       allocation sites are listed as indented subcategories.
+                       Gathering them requires root privileges or the
+                       com.apple.private.memoryinfo entitlement; without them
+                       only the category total is shown.
+
+     Static carveouts  Memory reserved at boot time by the kernel.  Individual
+                       carveout regions from the device tree are listed as
+                       indented subcategories.  Nested or overlapping regions
+                       are clipped so each physical page is counted once, and
+                       any unnamed remainder is aggregated into an Unmapped
+                       row.
+
+     The Swap category is displayed below the Physical Memory summary and is
+     not part of the physical memory total.
+
+     Swap              Compressor pages currently stored in the on-disk
+                       swapfile.
+
+                       Swapped data  The subset of swap pages holding
+                                     compressed page data.
+
+OUTPUT FORMATS
+   Default (human-readable)
+     Each category is printed as a section headed by its page count and size.
+     Indented subcategory rows show a label, page count, size in megabytes, a
+     fixed-width visual bar, and a percentage relative to the enclosing
+     category; they are sorted largest first, and any remainder appears as an
+     Unaccounted row.  A trailing Physical Memory section breaks the total
+     down into the main categories, with bars and percentages relative to
+     physical memory.
+
+   CSV
+     A header row followed by one data row per sample.  The first two columns
+     are datetime (ISO 8601) and abstime (Unix epoch with millisecond
+     precision).  All memory values are in bytes.
+
+   Perfdata
+     A perfdata file containing one metric per memory category.  With
+     --interval, each sample is written as a separate group.  All values are
+     in bytes.
+
+EXIT STATUS
+     The meminfo utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     Display a one-shot breakdown (wired sites require root):
+           # meminfo
+
+     Show only the physical-memory summary and swap:
+           $ meminfo --summary
+
+     Expand wired zones into individual rows:
+           # meminfo --zones
+
+     Show everything, including hidden and overlapping subtotals:
+           # meminfo --all
+
+     Sample every 2 seconds, stop after 10 samples, output as CSV:
+           $ meminfo --csv /tmp/mem.csv --interval 2 --count 10
+
+     Stream CSV for 60 seconds at half-second intervals:
+           $ meminfo --csv /tmp/mem.csv --interval 0.5 --duration 60
+
+SEE ALSO
+     memory_pressure(1), top(1), vm_stat(1), zprint(1)
+
+ macOS 27.0                    March 13, 2026                      MEMINFO(1)

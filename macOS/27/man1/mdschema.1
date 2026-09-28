@@ -1,0 +1,74 @@
+MDSCHEMA(1)                 General Commands Manual                MDSCHEMA(1)
+
+NAME
+     mdschema – compile, query, and display information about a Spotlight
+     metadata attribute schema
+
+SYNOPSIS
+     mdschema [-h] [-a] [-A attribute] [-t type] [-compile path] [-path path]
+
+DESCRIPTION
+     The mdschema utility is used to compile, query, and display information
+     about a Spotlight metadata attribute schema.  Spotlight uses a schema to
+     define metadata attributes that can be associated with files and other
+     searchable content.  This tool allows compilation of a custom schema,
+     along with inspection of the schema, including attribute definitions,
+     display names, and content type associations.
+
+     The following options are available:
+
+     -h      Display usage information and exit.
+
+     -a      Display all metadata attributes defined in the schema.  This
+             shows a complete list of available attribute names that can be
+             used with Spotlight queries and file metadata operations.
+
+     -A attribute
+             Display detailed information about a specific metadata attribute,
+             including its type (string, number, date, boolean), whether it is
+             multi-valued, display name, description, and other metadata
+             properties.  The attribute should be a valid metadata attribute
+             name such as ‘kMDItemDisplayName’ or
+             ‘com_apple_metadata_modtime’.
+
+     -t type
+             Display the metadata attributes associated with a specific
+             Uniform Type Identifier (UTI). This shows which attributes are
+             relevant for a particular content type, including display
+             attributes, preview attributes, and read-only attributes.  The
+             type should be a valid UTI such as ‘public.jpeg’ or
+             ‘com.apple.mail.email’.
+
+     -compile path
+             Compile a custom metadata attribute schema cache and write it to
+             the specified path.  This option processes all available schema
+             definition files and generates a schema database that can be used
+             by Spotlight.  This is useful for adding a custom metadata schema
+             to an application resource bundle.
+
+     -path path
+             Write the output to the specified file path instead of stdout.
+             This option can be used with other query options to save the
+             schema information to a file.
+
+EXAMPLES
+     Display all available metadata attributes:
+
+           mdschema -a
+
+     Get information about a specific attribute:
+
+           mdschema -A kMDItemDisplayName
+
+     Show attributes for JPEG images:
+
+           mdschema -t public.jpeg
+
+     Compile and build a metadata schema cache:
+
+           mdschema -compile /path/to/schema.xml -path /path/to/schema.mdplist
+
+SEE ALSO
+     mdfind(1), mdimport(1), mdls(1), mdutil(1)
+
+ macOS 27.0                   January 13, 2026                    MDSCHEMA(1)

@@ -1,0 +1,260 @@
+gpucapture(1)               General Commands Manual              gpucapture(1)
+
+NAME
+     gpucapture - CLI tool to produce GPU trace captures
+
+SYNOPSIS
+      gpucapture [--help] [--version] [--list-devices]
+      gpucapture boundaries [--pid <PID>] [--device <ID>] [--help]
+      gpucapture start [--pid <PID>] [--boundary <BOUNDARY_ID>] [--label
+     <BOUNDARY_LABEL>]
+                       [--count <BOUNDARY_COUNT>] [--output <FILEPATH>]
+     [--device <ID>] [--until-exit] [--help]
+      gpucapture stop [--pid <PID>] [--device <ID>] [--all] [--help]
+      gpucapture list [--help]
+      gpucapture config [--pid <PID>] [--device <ID>] [--shared-mem-opt
+     <VALUE>] [--help]
+
+DESCRIPTION
+     gpucapture is a command line tool for creating GPU Trace files for any
+     App, process or service that can connect to GPU Tools agent/daemon
+     gputoolsserviced. A GPU Trace file contains Metal
+     (https://developer.apple.com/metal/) API calls (or other APIs such as
+     MetalFX (https://developer.apple.com/documentation/metalfx)) as well as
+     the necessary data to reconstruct any GPU workloads for further analysis
+     via Metal Debugger
+     (https://developer.apple.com/documentation/xcode/metal-debugger).
+
+     In order to establish a connection the user is responsible to launch
+     their target process with MTL_CAPTURE_ENABLED=1 environment variable
+     within. This environment variable is responsible for loading
+     GPUToolsCapture.framework into the process and will attempt to connect to
+     gputoolsserviced if a MTLDevice
+     (https://developer.apple.com/documentation/metal/mtldevice) is ever
+     created within the process.
+
+COMMANDS
+     list
+
+            List all capturable processes. When Xcode 15 or higher is running
+            on the system, it will also display capturable processes of any
+            remote device visible to Xcode.
+
+     boundaries
+
+            List all capturable boundaries for a given PID. A boundary is an
+            API call that is used by gpucapture as a trigger to begin/end a
+            GPU Trace.
+
+            • if there are more than 1 capturable processes, it will require
+              --pid PID and/or --device ID for disambiguation.
+
+            Available boundary types:
+
+            • Device - begins as soon as the next MTLCommandBuffer
+              (https://developer.apple.com/documentation/metal/mtlcommandbuffer)
+              creation is traced. It ends once the created command buffer is
+              scheduled.
+
+            • Queue - begins as soon as the next MTLCommandBuffer
+              (https://developer.apple.com/documentation/metal/mtlcommandbuffer)
+              creation is traced on the target MTLCommandQueue
+              (https://developer.apple.com/documentation/metal/mtlcommandqueue).
+              It ends once the created command buffer is scheduled.
+
+            • Layer - begins when we hit the next [CAMetalDrawable present]
+              (https://developer.apple.com/documentation/metal/mtldrawable)
+              (or derivative present APIs) on the target CAMetalLayer
+              (https://developer.apple.com/documentation/quartzcore/cametallayer).
+              It ends on the next present call in the target layer.
+
+            • Scope - begins as soon as we trace [MTLCaptureScope beginScope]
+              (https://developer.apple.com/documentation/metal/mtlcapturescope/2869571-beginscope).
+              It ends once we hit [MTLCaptureScope endScope]
+              (https://developer.apple.com/documentation/metal/mtlcapturescope/2869574-endscope)
+              on the same scope.
+
+     start
+
+            Begins a GPU trace capture. If no arguments are provided this
+            command will try a default behavior equivalent to gpucapture start
+            --boundary DEFAULT_BOUNDARY_ID --count 1.
+
+            • if there are more than 1 capturable processes, it will require
+              --pid PID and/or --device ID for disambiguation.
+
+            • DEFAULT_BOUNDARY_ID value will depend on the available
+              boundaries in the target process. If there is a valid
+              CAMetalLayer
+              (https://developer.apple.com/documentation/quartzcore/cametallayer)
+              it will attempt a Layer boundary capture unless there are
+              multiple available layers. If multiple layers are available it
+              will fail and ask for boundary disambiguation. If no layer is
+              available, DEFAULT_BOUNDARY_ID will do a Device boundary
+              capture.
+
+            • a gpucapture will end and produce a GPU Trace if either the
+              BOUNDARY_COUNT is reached, there is a gpucapture stop or if the
+              process exits.
+
+            Produced GPU Trace is always stored in the local device
+            filesystem.
+
+     stop
+
+            Ends a GPU trace capture. Options are used to help decide the
+            scope for applying the stop command.
+
+            Any gpucapture in progress can also be stopped at any point in
+            time via Ctrl+C
+
+     config
+
+            Inspect or change a setting on a running process. Settings persist
+            for the lifetime of the target process.
+
+            With no setter flag, prints the current value of every supported
+            setting. When a setter flag is provided, applies the new value.
+
+            Target selection mirrors gpucapture start and gpucapture boundary:
+            with a single capturable process available, no target flags are
+            required; with multiple, --pid PID and/or --device ID must be
+            provided.
+
+            Supported settings:
+
+            • --shared-mem-opt <VALUE> — Shared Memory Optimization mode.
+              VALUE is one of disabled, enabled, automatic. Default: automatic
+              on macOS, disabled elsewhere.
+
+OPTIONS
+     -h, --help
+
+            Show contextual help
+
+     -p, --pid <PID>
+
+            Capturable process PID for command to execute, if there are
+            multiple PID available --device ID is required for disambiguation
+
+     -d, --device <ID>
+
+            Target device ID for command to execute at.
+
+     -b, --boundary <BOUNDARY_ID>
+
+            BOUNDARY_ID is the identifier of the trigger to use to begin/end a
+            GPU Trace capture.
+
+     -l, --label <BOUNDARY_LABEL>
+
+            BOUNDARY_LABEL is used to identify a boundary API object instead
+            of BOUNDARY_ID. If multiple objects share the same BOUNDARY_LABEL,
+            gpucapture will be unable to define the target and will request
+            the user to use --boundary BOUNDARY_ID instead. This option is
+            especially useful for apps that do not have deterministic resource
+            creation (random BOUNDARY_ID) but do label their objects. Only
+            available for Queue, Layer or Scope.
+
+     -c, --count <BOUNDARY_COUNT>
+
+            BOUNDARY_COUNT is the amount of trigger ends that should be hit by
+            the GPU trace capture before actually stopping it.
+
+            • when applied to a Device or Queue this count is the number of
+              complete MTLCommandBuffers
+              (https://developer.apple.com/documentation/metal/mtlcommandbuffer)
+              captured.
+
+            • when applied to a Layer this count is equivalent to the number
+              of frames.
+
+            • when applied to a Scope this count is equivalent to the number
+              of [MTLCaptureScope endScope]
+              (https://developer.apple.com/documentation/metal/mtlcapturescope/2869574-endscope)
+              seen after the begin trigger was reached.
+
+     -u, --until-exit
+
+            This option is equivalent to --count UINT_MAX. Useful for
+            capturing CLI workloads where the amount of CommandBuffers is not
+            known as this allows the capture to progress until the process
+            exits. Additionally, if you aim to control the gpucapture start of
+            the process you should launch your target with
+            MTLCAPTURE_WAIT_FOR_SIGNAL=1, this environment variable will halt
+            the process on MTLDevice
+            (https://developer.apple.com/documentation/metal/mtldevice)
+            creation until a gpucapture start signal is registered.
+
+     -o, --output <FILEPATH>
+
+            FILEPATH on the host machine's file system, to where the recorded
+            .gputrace will be stored.
+
+            • must be a directory, or a filepath ending in .gputrace
+
+            • if no --output is provided, gpucapture will default to saving
+              the .gputrace archive in the current working directory it was
+              launched in
+
+     , --version
+
+            Show tool version
+
+     , --list-devices
+
+            List available devices and exit. Shows an ID column that can be
+            passed to --device, along with the device name, model, and OS
+            version.
+
+     , --shared-mem-opt <VALUE>
+
+            Used with config. Sets Shared Memory Optimization mode on the
+            target process. VALUE is one of disabled, enabled, automatic. The
+            new value persists for the lifetime of the target process.
+
+EXAMPLES
+      Retrieve a list of potential targets to capture.
+
+            $ gpucapture list
+
+      Retrieve a list of boundaries available for the PID 12345.
+
+            $ gpucapture boundaries --pid 12345
+
+      Quick command to produce single frame/MTLCommandBuffer capture if there
+     is a single process available in `gpucapture list`.
+
+            $ gpucapture start
+
+      Capture 5 times the boundary ID 3 in the process 12345
+
+            $ gpucapture start --pid 12345 --boundary 3 --count 5
+
+      Captures 100000 times the default boundary ID in the process 12345.
+     Default boundary ID will be either a Layer or a Device.
+
+            $ gpucapture start --pid 12345 --count 100000
+
+      Stops any active capture in the process 12345.
+
+            $ gpucapture stop --pid 12345
+
+      Stops any active capture in any capturable process visible by
+     `gpucapture list`.
+
+            $ gpucapture stop --all
+
+      Show all current settings on the only running capturable process.
+
+            $ gpucapture config
+
+      Show all current settings on PID 12345.
+
+            $ gpucapture config --pid 12345
+
+      Set Shared Memory Optimization to disabled on PID 12345.
+
+            $ gpucapture config --pid 12345 --shared-mem-opt disabled
+
+300.20                                                           gpucapture(1)

@@ -1,0 +1,544 @@
+MetalPerformanceHUD                  LOCAL                 MetalPerformanceHUD
+
+NAME
+     MetalPerformanceHUD – Metal Performance HUD overview and configuration
+
+DESCRIPTION
+     The Metal Performance HUD (heads-up display) is a real-time overlay that
+     displays graphics performance information for Metal apps.  The overlay
+     helps developers spot subtle performance issues such as large variations
+     in rendering time and identify scopes worth capturing in Xcode or
+     Instruments.
+
+     The HUD can also log per-frame statistics to the console, but console
+     logging is deprecated; see LOGGING and COLLECTING PERFORMANCE DATA.
+
+     By default, the top of the HUD shows the Metal device, the layer
+     resolution, an indicator for whether the present mode is direct or
+     composited, the amount of memory allocated by the app and Metal, and
+     whether Game Mode is on or off.  The bottom section shows the average
+     frames per second (FPS), GPU time, and frame interval, with a chart
+     graphing the frame interval for the past 120 frames.  The HUD can be
+     customized to include additional metrics; see METRICS below.
+
+LOGGING
+     The HUD recognizes a family of MTL_HUD_LOG_* environment variables
+     (MTL_HUD_LOG_ENABLED and MTL_HUD_LOG_SHADER_ENABLED) that write per-frame
+     statistics to the console.
+
+     Avoid using these variables. Console logging is deprecated and should not
+     be used for new workflows.  It emits unstructured text, cannot be opened
+     in Instruments, and captures only a subset of the available metrics.  For
+     recording and analyzing performance data, use metalperftrace(1) instead;
+     see COLLECTING PERFORMANCE DATA.
+
+ENABLING THE HUD
+     The Metal Performance HUD can be enabled in several ways.
+
+   From Xcode
+     Use the runtime diagnostics options in the scheme settings:
+
+           1.   In the Xcode toolbar, choose Edit Scheme from the Scheme menu,
+                or choose Product > Scheme > Edit Scheme.
+
+           2.   In the scheme action panel, select Run.
+
+           3.   In the action setting tab, click Diagnostics.
+
+           4.   Select Show Graphics Overview to enable the HUD, and click
+                Close.
+
+   On a device
+     On iOS, iPadOS, or tvOS, the HUD is enabled in the Developer settings:
+
+           1.   Open the Settings app.
+
+           2.   Select Developer.
+
+           3.   Under Graphics HUD, toggle Show Graphics HUD to enable the
+                overlay.
+
+     The Metal Performance HUD appears for apps you build and install yourself
+     to your development devices.  The device must have a development
+     provisioning profile installed for the Developer options to appear in the
+     Settings app.
+
+   Programmatically
+     Either of the following enables the HUD without setting environment
+     variables or scheme options:
+
+           •   Add MetalHudEnabled to the app's Info.plist file.
+
+           •   Add MetalHUDForceEnabled=1 to the app's NSUserDefaults.
+
+   From metalperftrace
+     The metalperftrace(1) tool can enable the HUD in an already-running Metal
+     process without relaunching it.  Use the setup subcommand with the hud
+     feature, targeting the process by PID:
+
+           metalperftrace setup --enable hud --pid 1234
+
+     Disable it again with --disable hud.  This is useful for turning the
+     overlay on for a process that was launched without any of the options
+     above.  See COLLECTING PERFORMANCE DATA.
+
+ENVIRONMENT
+     The HUD recognizes the following environment variables.  The same keys
+     may also be set as entries in the developerHUDProperties dictionary of a
+     CAMetalLayer to apply the same effects programmatically.
+
+     MTL_HUD_ENABLED                           Enables the Metal Performance
+                                               HUD overlay for the app.
+
+                                               Accepted values: 1 (or any non-
+                                               zero integer) to enable; 0 to
+                                               disable.
+
+                                               Default: 0 (disabled).
+
+     MTL_HUD_CONFIG_FILE                       Path to a HUD configuration
+                                               property list file to load at
+                                               startup.  The file must be
+                                               readable by the app, and the
+                                               path is resolved through
+                                               symlinks before loading.  A
+                                               configuration file can be
+                                               exported from the configuration
+                                               panel using Export HUD
+                                               Configuration.
+
+                                               Accepted values: an absolute or
+                                               relative path to a .plist file.
+
+                                               Default: none.
+
+     MTL_HUD_OPACITY                           Opacity of the overlay.
+
+                                               Accepted values: a floating-
+                                               point number; values are
+                                               clamped to the range [0.0,
+                                               1.0].
+
+                                               Default: 1.0 (fully opaque).
+
+     MTL_HUD_SCALE                             Scale of the overlay, expressed
+                                               as a fraction of the drawable
+                                               width.  The rendered width
+                                               never falls below 300 pixels.
+
+                                               Accepted values: a floating-
+                                               point number; values are
+                                               clamped to the range [0.1,
+                                               1.0].
+
+                                               Default: 0.2 (20% of the
+                                               drawable width).
+
+     MTL_HUD_ALIGNMENT                         Position of the overlay.
+
+                                               Accepted values: topleft,
+                                               topcenter, topright,
+                                               centerleft, centered,
+                                               centerright, bottomleft,
+                                               bottomcenter, or bottomright.
+                                               The corresponding short forms
+                                               tl, tc, tr, cl, c, cr, bl, bc,
+                                               and br are also accepted.
+
+                                               Default: topright.
+
+     MTL_HUD_POSITION_X, MTL_HUD_POSITION_Y    Absolute position of the
+                                               overlay in pixels.  Setting
+                                               either variable overrides
+                                               MTL_HUD_ALIGNMENT.
+
+                                               Accepted values: a number of
+                                               pixels, measured from the top-
+                                               left of the drawable, in the
+                                               ranges [0, drawableWidth] and
+                                               [0, drawableHeight],
+                                               respectively.
+
+                                               Default: 0.
+
+     MTL_HUD_ELEMENTS                          Selects which metrics appear in
+                                               the overlay.
+
+                                               Accepted values: a comma-
+                                               separated list of metric names
+                                               (see METRICS), or one of the
+                                               named layouts FPS, Lite,
+                                               Default, Rich, or Full.
+
+                                               Default: the Lite layout.
+
+     MTL_HUD_ENCODER_TIMING_ENABLED            Turns on encoder-based GPU time
+                                               tracking.  Encoder GPU time
+                                               tracking is only available if
+                                               the app does not use the Metal
+                                               counter sample buffer, and may
+                                               increase the CPU cost of the
+                                               HUD due to additional data
+                                               processing.
+
+                                               Accepted values: 1 to enable; 0
+                                               to disable.
+
+                                               Default: 0 (disabled).
+
+     MTL_HUD_ENCODER_GPU_TIMELINE_FRAME_COUNT  Maximum number of frames that
+                                               appear in the GPU timeline.
+                                               Requires encoder GPU time
+                                               tracking.
+
+                                               Accepted values: an integer;
+                                               values are clamped to the range
+                                               [1, 10].
+
+                                               Default: 6.
+
+     MTL_HUD_ENCODER_GPU_TIMELINE_SWAP_DELTA   Update interval of the GPU
+                                               timeline, in seconds.  Requires
+                                               encoder GPU time tracking.
+
+                                               Accepted values: a floating-
+                                               point number of seconds; values
+                                               are clamped to the range [0.1,
+                                               10.0].
+
+                                               Default: 1.0.
+
+     MTL_HUD_SHOW_ZERO_METRICS                 Shows metrics whose value has
+                                               been 0 since the app launched
+                                               or since the last reset.  The
+                                               HUD hides such metrics by
+                                               default, since they may not be
+                                               available or are not used in
+                                               the current context.
+
+                                               Accepted values: 1 to show
+                                               zero-valued metrics; 0 to hide
+                                               them.
+
+                                               Default: 0 (hidden).
+
+     MTL_HUD_SHOW_METRICS_RANGE                Reports the range of metrics in
+                                               addition to their average.
+                                               When enabled, the HUD displays
+                                               the average value of the last
+                                               120 frames along with the
+                                               minimum and maximum values of
+                                               the last 1200 frames.
+
+                                               Accepted values: 1 to enable; 0
+                                               to disable.
+
+                                               Default: 0 (disabled).
+
+     MTL_HUD_INSIGHTS_ENABLED                  Turns on the performance
+                                               insights feature, which tracks
+                                               Metal API usage and highlights
+                                               potential bottlenecks.
+
+                                               Accepted values: 1 to enable; 0
+                                               to disable.
+
+                                               Default: 0 (disabled).
+
+     MTL_HUD_INSIGHT_TIMEOUT                   Time before a performance
+                                               insight disappears, in seconds.
+
+                                               Accepted values: a floating-
+                                               point number of seconds; values
+                                               below 1.0 are raised to 1.0.
+
+                                               Default: 10.0.
+
+     MTL_HUD_INSIGHT_REPORT_INTERVAL           Report interval of the
+                                               performance insights, in
+                                               seconds.  The HUD reports an
+                                               insight if half of the frames
+                                               during this interval show a
+                                               particular pattern.
+
+                                               Accepted values: a floating-
+                                               point number of seconds; values
+                                               below 1.0 are raised to 1.0.
+
+                                               Default: 5.0.
+
+     MTL_HUD_RUSAGE_UPDATE_INTERVAL            System resource usage update
+                                               interval, in seconds.
+
+                                               Accepted values: a floating-
+                                               point number of seconds; values
+                                               below 0.1 are raised to 0.1.
+
+                                               Default: 3.0.
+
+     MTL_HUD_METRIC_TIMEOUT                    Timeout of transient metrics,
+                                               in seconds.  The HUD
+                                               automatically hides transient
+                                               metrics, such as MetalFX
+                                               metrics, when the corresponding
+                                               feature is disabled.
+
+                                               Accepted values: a floating-
+                                               point number of seconds; values
+                                               below 0.1 are raised to 0.1.
+
+                                               Default: 1.0.
+
+     MTL_HUD_REPORT_URL                        App-writable path where the
+                                               system writes performance
+                                               reports.
+
+                                               Accepted values: a writable
+                                               file path.
+
+                                               Default: none.
+
+     MTL_HUD_DISABLE_MENU_BAR                  Disables the Metal Performance
+                                               HUD menu bar item on macOS.
+
+                                               Accepted values: 1 to disable
+                                               the menu bar item; 0 to show
+                                               it.
+
+                                               Default: 0 on macOS (menu bar
+                                               item shown); 1 on iOS and tvOS,
+                                               where there is no menu bar.
+
+     MTL_HUD_STATE_REPORTER_DOMAINS            Selects which StateReporting
+                                               domains are displayed in the
+                                               overlay.  Setting this variable
+                                               also enables the State
+                                               Reporters metric.
+
+                                               Accepted values: a comma-
+                                               separated list of
+                                               StateReporting domain names;
+                                               the list may be wrapped in
+                                               double quotes.  The literal
+                                               value ALL or * enables every
+                                               available domain.
+
+                                               Default: none.
+
+     MTL_HUD_MFX_JITTER_VIS                    Enables the MetalFX jitter
+                                               scatter plot in the overlay.
+
+                                               Accepted values: 1 to enable; 0
+                                               to disable.
+
+                                               Default: 0 (disabled).
+
+     MTL_HUD_MFX_JITTER_OFFSET_RANGE           Maximum range of the MetalFX
+                                               jitter multiplier sliders.
+
+                                               Accepted values: a floating-
+                                               point number; a value of n
+                                               produces sliders that span [-n,
+                                               +n].
+
+                                               Default: 5.0 (sliders spanning
+                                               [-5.0, +5.0]).
+
+     MTL_HUD_LOG_ENABLED                       Deprecated.  Logs per-frame
+                                               statistics to the console
+                                               instead of, or in addition to,
+                                               displaying them in the overlay.
+                                               Console logging is deprecated;
+                                               use metalperftrace(1) to
+                                               collect performance data
+                                               instead (see COLLECTING
+                                               PERFORMANCE DATA).
+
+                                               Accepted values: 1 to enable; 0
+                                               to disable.
+
+                                               Default: 0 (disabled).
+
+PROGRAMMATIC CONFIGURATION
+     The HUD can be configured programmatically by populating the
+     developerHUDProperties dictionary on a CAMetalLayer instance:
+
+           myMetalLayer.developerHUDProperties = [
+               "mode": "default",
+               "positionX": 0,
+               "positionY": 0,
+               // ...
+           ]
+
+     The dictionary accepts the following well-known keys:
+
+     mode       One of default, main, or disabled.  Enables or disables the
+                HUD for this layer.  For apps that use multiple layers, set
+                the value to main to designate the primary layer, since
+                certain metrics (such as GPU time) are calculated based on the
+                presentation interval of the main layer.  By default, the main
+                layer is the first layer the app creates.
+
+     positionX  Absolute X position of the HUD in pixels, in the range [0,
+                drawableWidth].
+
+     positionY  Absolute Y position of the HUD in pixels, in the range [0,
+                drawableHeight].
+
+     Any of the MTL_HUD_* environment variables documented in ENVIRONMENT may
+     also be supplied as keys in the same dictionary.
+
+METRICS
+     The MTL_HUD_ELEMENTS environment variable accepts a comma-separated list
+     of metric names.  The available names are:
+
+     device                  Metal device name.
+     rosetta                 Active architecture (x86_64) when running through
+                             the Rosetta translation layer.
+     layersize               Layer size and present mode (direct or
+                             composited).
+     layerscale              Content scale factor and pixel format of the
+                             layer.
+     memory                  Process memory and the currentAllocatedSize of
+                             the MTLDevice.
+     thermal                 Current ProcessInfo.thermalState.
+     fps                     Rolling average of frames per second over the
+                             past 120 frames.
+     fpsgraph                Chart of FPS over the past 120 frames.
+     framenumber             Current frame number, counting drawable presents
+                             since launch or last metric reset.
+     gputime                 Rolling average GPU time for the past 120 frames,
+                             computed from MTLCommandBuffer gpuStartTime and
+                             gpuEndTime.
+     presentdelay            Rolling average present delay for the past 120
+                             frames, the interval between presentDrawable and
+                             the drawable hitting the display.
+     frameinterval           Rolling average on-glass time difference between
+                             two consecutive MTLDrawable presents over the
+                             past 120 frames.
+     frameintervalgraph      Chart of frame interval over the past 120 frames.
+     frameintervalhistogram  Bucketed frame interval bar chart, with bucket
+                             size equal to the display refresh rate.
+     metalcpu                Number of scheduled command buffers and encoders,
+                             and CPU encoding time for the last frame.
+     shaders                 Shader compiler activity: number of pipeline
+                             states, cached shaders, and compiled shaders,
+                             plus a graph of compilation time over the past
+                             120 frames.
+     disk                    Disk bytes read, written, and logical writes as
+                             reported by rusage_info_current.
+     gputimeline             Encoder GPU time per encoder type plus a GPU
+                             timeline graph for the past three frames every
+                             second.  Requires encoder GPU time tracking; see
+                             MTL_HUD_ENCODER_TIMING_ENABLED.
+     toplabeledcommandbuffers
+                             Most GPU-intensive command buffers with a
+                             MTLCommandBuffer.label.  Requires encoder GPU
+                             time tracking.
+     toplabeledencoders      Most GPU-intensive command encoders with a
+                             MTLCommandEncoder.label.  Requires encoder GPU
+                             time tracking.
+
+     The HUD also reports MetalFX metrics (scaling method, input and target
+     resolution, exposure, and frame interpolator state) when an app uses the
+     corresponding MetalFX effects.
+
+CUSTOMIZATION ON macOS
+     When the HUD is enabled, a Metal HUD menu is added to the menu bar.  This
+     menu provides quick access to common HUD controls, performance report
+     generation, and the configuration panel.  The configuration panel can
+     also be opened by triple-clicking the HUD overlay.
+
+     The configuration panel exposes three sections:
+     HUD       General controls (such as encoder GPU time tracking) and
+               overlay opacity, scale, and position.
+     Metrics   The complete list of available overlay metrics.
+     Insights  Performance insights settings.
+
+     A custom configuration can be exported as a property list using Export
+     HUD Configuration, then re-applied at launch by setting
+     MTL_HUD_CONFIG_FILE to the file's path.  The Copy HUD Configuration menu
+     item exports the current state as a list of environment variables
+     suitable for passing to the app at launch.
+
+CUSTOMIZATION ON A DEVICE
+     On iOS or iPadOS, the HUD can be customized in the Developer settings:
+
+           1.   Open the Settings app.
+
+           2.   Select Developer.
+
+           3.   Under Graphics HUD, tap Graphics HUD to access the settings.
+
+     These device settings apply to all apps that enable the Metal Performance
+     HUD.  Environment variables can be used to override the settings when
+     debugging from Xcode.
+
+EXAMPLES
+     Enable the HUD for a single launch from a shell:
+
+           MTL_HUD_ENABLED=1 ./MyMetalApp
+
+     Position the HUD in the top-left corner at half opacity:
+
+           MTL_HUD_ENABLED=1 MTL_HUD_ALIGNMENT=topleft \
+               MTL_HUD_OPACITY=0.5 ./MyMetalApp
+
+     Show only FPS, GPU time, and the frame interval graph:
+
+           MTL_HUD_ENABLED=1 \
+               MTL_HUD_ELEMENTS=fps,gputime,frameintervalgraph \
+               ./MyMetalApp
+
+     Enable encoder GPU time tracking and the value range display:
+
+           MTL_HUD_ENABLED=1 MTL_HUD_ENCODER_TIMING_ENABLED=1 \
+               MTL_HUD_SHOW_METRICS_RANGE=1 ./MyMetalApp
+
+     Apply an exported HUD configuration file:
+
+           MTL_HUD_ENABLED=1 \
+               MTL_HUD_CONFIG_FILE=~/HUDConfig.plist ./MyMetalApp
+
+COLLECTING PERFORMANCE DATA
+     The system continuously records frame timing and related statistics for
+     all Metal layers, independently of whether the HUD overlay is visible.
+     The metalperftrace(1) command-line tool retrieves this always-on data and
+     is the recommended way to capture performance information for later
+     analysis, replacing console logging.
+
+     metalperftrace(1) can:
+
+           •   Collect recorded metrics for a time range and write them as
+               .atrc trace files that can be opened in Instruments (collect).
+
+           •   Print a per-process, per-layer performance summary from a
+               collected trace, as text or JSON (overview).
+
+           •   Stream live performance statistics from running processes as
+               they arrive (listen).
+
+           •   Dynamically enable or disable trace features including the
+               Metal Performance HUD itself in a running process (setup).
+
+     For example, to enable the HUD in a running process and then stream its
+     live statistics:
+
+           metalperftrace setup --enable hud --pid 1234
+           metalperftrace listen --pid 1234
+
+     See metalperftrace(1) for the full set of subcommands and options.
+
+SEE ALSO
+     metalperftrace(1)
+
+     Monitoring your Metal app's graphics performance:
+     https://developer.apple.com/documentation/xcode/monitoring-your-metal-apps-graphics-performance
+
+     Customizing the Metal Performance HUD:
+     https://developer.apple.com/documentation/xcode/customizing-metal-performance-hud
+
+     Understanding the Metal Performance HUD metrics:
+     https://developer.apple.com/documentation/xcode/understanding-metal-performance-hud-metrics
+
+ macOS 27.0                     May 26, 2026              MetalPerformanceHUD

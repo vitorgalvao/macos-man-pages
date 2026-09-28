@@ -1,0 +1,20 @@
+managedappsd(8)             System Manager's Manual            managedappsd(8)
+
+NAME
+     managedappsd – Managed apps daemon
+
+SYNOPSIS
+     managedappsd
+
+DESCRIPTION
+     managedappsd handles requests from managed apps for administrator-
+     provisioned configuration and secrets.
+
+FILES
+     /System/Library/LaunchDaemons/com.apple.managedappsd.plist
+
+DIAGNOSTICS
+     Logging can be viewed via: log stream -—predicate 'senderImagePath
+     contains "managedappsd"'
+
+macOS                          December 3, 2025                managedappsd(8)

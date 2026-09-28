@@ -1,0 +1,79 @@
+FindMySecureEnvironmentXPCService(8)                   System Manager's Manual
+
+NAME
+     FindMySecureEnvironmentXPCService – Find My secure environment XPC
+     service
+
+SYNOPSIS
+     FindMySecureEnvironmentXPCService
+
+DESCRIPTION
+     FindMySecureEnvironmentXPCService is an XPC service that provides
+     authenticated access to Apple-internal secure environment endpoints on
+     behalf of Find My clients.  It handles AppleConnect OAuth authentication,
+     session token management, and authenticated request forwarding so that
+     client processes do not require direct access to authentication
+     credentials.
+
+     The service is launched on demand by launchd(8) when a client connects to
+     its Mach service and idle-exits when no connections remain.
+
+     There are no configuration options to FindMySecureEnvironmentXPCService.
+     Users should not run it manually.
+
+   Authentication Flow
+     When a client sends a request, the service:
+
+           1.   Obtains an AppleConnect OAuth authorization code via
+                AppleConnectClient.framework.
+
+           2.   Exchanges the authorization code for a session token from the
+                secure environment token endpoint.
+
+           3.   Caches the session token for subsequent requests.
+
+           4.   Injects the session token and environment headers into the
+                client's request and forwards it to the backend.
+
+           5.   Returns the response data and HTTP response directly to the
+                client.
+
+     If the backend returns HTTP 401, the service invalidates its cached token
+     and AppleConnect ticket, re-authenticates, and retries the request once
+     before returning the error.
+
+   XPC Interface
+     The service exports two methods via the SecureEnvironmentXPCProtocol
+     interface:
+
+     fetchSecureEnvironmentToken
+             Authenticates and returns a session token string.  Primarily used
+             for diagnostics via sptool(8).
+
+     performAuthenticatedRequest
+             Accepts an NSURLRequest, injects authentication headers, forwards
+             the request, and replies with the response data and
+             NSURLResponse.
+
+ENTITLEMENTS
+     Clients must possess the com.apple.findmy.secureenvironment.client
+     entitlement and declare a Mach service lookup for
+     com.apple.findmy.secureenvironment in their entitlements file.
+     Connections without the entitlement are rejected.
+
+MACH SERVICE
+     com.apple.findmy.secureenvironment
+
+FILES
+     /System/Library/PrivateFrameworks/FindMySecureEnvironment.framework/XPCServices/FindMySecureEnvironmentXPCService.xpc
+             Service bundle.
+
+     /System/Library/LaunchDaemons/com.apple.findmy.secureenvironment.plist
+             launchd.plist(5) configuration.
+
+SEE ALSO
+     launchd(8), searchpartyd(8), searchpartyuseragent(8), sptool(8),
+     launchd.plist(5)
+
+Mac OS X                        April 14, 2026
+                                          FindMySecureEnvironmentXPCService(8)

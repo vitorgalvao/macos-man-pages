@@ -1,0 +1,355 @@
+FOOTPRINT(1)                General Commands Manual               FOOTPRINT(1)
+
+NAME
+     footprint – gathers memory information about one or more processes
+
+SYNOPSIS
+     footprint [-j path] [-f bytes|formatted|pages] [--sort column]
+               [-p name|pid] [-x name|pid] [-t] [-s] [-v] [-y] [-w]
+               [--swapped] [--wired] [-a] process-name | pid | memgraph [...]
+     footprint --sample secs ...
+     footprint -h, --help
+
+DESCRIPTION
+     The footprint utility gathers and displays memory consumption information
+     for the specified processes or memory graph files.
+
+     footprint will display all addressable memory used by the specified
+     processes, but it emphasizes memory considered "dirty" by the operating
+     system kernel for purposes of accounting.  If multiple processes are
+     specified, footprint will de-duplicate multiply-mapped objects and will
+     display shared objects separately from private ones.  It will also print
+     a summary of total de-duplicated footprint.  footprint also de-duplicates
+     certain wired memory between the kernel_task address space and user space
+     processes, such as page tables, memory locked via mlock(2), and tagged
+     wired memory including most kernel extensions and non-zone wired memory.
+
+     footprint must be run as root when inspecting processes that are not
+     owned by the current user.
+
+     Processes are specified using a PID, exact process name, or partial
+     process name.  Memory information will be displayed for all processes
+     matching any provided name.
+
+OPTIONS
+     -a, --all
+             target all processes and report system-level auxiliary data
+
+     --sysFootprint
+             print system-level auxiliary data
+
+     -j, --json path
+             also save a JSON representation of the data to the specified path
+
+     -f, --format bytes|formatted|pages
+             textual output should be formatted in bytes, pages, or human-
+             readable formatted (default)
+
+     --sort column
+             textual output should be sorted by the given column name, for
+             example Dirty (default), Clean, Category, etc.
+
+     -p, --proc name
+             target the given process by name (can be used multiple times)
+
+     -p, --pid pid
+             target the given process by pid (can be used multiple times)
+
+     -x, --exclude name/pid
+             exclude the given process by name or pid (can be used multiple
+             times)
+
+             often used with --all to exclude some processes from analysis
+
+     -t, --targetChildren
+             in addition to the supplied processes, target their children,
+             grandchildren, etc.
+
+     -s, --skip
+             skip processes that the system has determined are "idle" or
+             "clean" due to having no outstanding XPC transactions.
+
+     --minFootprint MiB
+             skip processes with footprint less than the provided minimum MiB.
+
+     --forkCorpse
+             analyze a forked corpse of the target process rather than the
+             original process.  Due to system resource limits on corpses this
+             argument is not compatible with --all or if attempting to analyze
+             more than a couple processes.
+
+     -v      display all regions and vmmap-like output of address space
+             layout.  Without this flag, the default output is a summary of
+             the totals for each memory category.
+
+     -w, --wide
+             show wide output with all columns and full paths (implies
+             --swapped --wired)
+
+     --swapped
+             show swapped/compressed column
+
+     --wired
+             show wired memory column
+
+     --vmObjectDirty
+             interpret dirty memory as viewed by Virtual Memory subsystem (VM)
+             objects in the kernel, rather than the default behavior which
+             interprets dirty memory through the pmap.  This mode may
+             calculate a total footprint that does not match what is shown in
+             other tools such as top(1) or Activity Monitor.app.  However, it
+             can provide insight into dirty memory that is by design not
+             included in the default mode, such as dirty file-backed memory or
+             a VM region mapped into a process that is normally accounted to
+             only the process that created it.
+
+             The --vmObjectDirty mode was the default in versions prior to
+             macOS 10.15.
+
+     --unmapped
+             search all processes for memory owned by the target processes but
+             not mapped into their address spaces (see the discussion in
+             MEMORY ACCOUNTING for more details)
+
+     --sample secs
+             Start footprint in sampling mode, gathering data every secs
+             seconds (which can be fractional like 0.5).  The interval is best
+             effort; if footprint cannot keep up with the requested interval,
+             it will automatically increase the interval and print a warning.
+             Text output will be a concatenation of usual text output with
+             added timestamps.  JSON output will contain a ‘samples’ array
+             with many of the same key/values that would normally be at the
+             top level.  All other command line options are also supported in
+             sampling mode.
+
+     --sample-duration duration
+             Time limit on the number of seconds to sample when combined with
+             --sample.  When this flag is omitted or set to 0, sampling
+             continues until <ctrl-c>.
+
+     -h, --help
+             display help and exit
+
+COLUMNS
+     Column names in parentheses indicate that they are a subset of one or
+     more non-parenthesized columns.
+
+     Dirty        Memory that has been written to and is neither backed by a
+                  file nor marked reclaimable.  It includes "(Swapped)"
+                  memory, purgeable memory marked non-volatile, and memory
+                  written to implicitly, such as zero-filled.  A process's
+                  "footprint" is equal to the total of all Dirty memory
+                  associated with that process.
+
+     (Swapped)    A subset of Dirty memory that has been compressed or swapped
+                  to storage by the kernel.
+
+     Clean        Resident memory which is neither reclaimable nor dirty with
+                  respect to a particular process.  Shared dirty memory billed
+                  to only one process will show up in this column for
+                  process(es) to which it is not billed.  Dirty memory
+                  deliberately excluded from a process's footprint is also
+                  reported here.  In this case, ‘(nofootprint)’ is added to
+                  the Category column and the Dirty column will always report
+                  zero bytes.  See nofootprint Memory below.
+
+     Reclaimable  Resident memory that has been explicitly marked as available
+                  for reuse.  For example, memory can be marked reclaimable
+                  when it is purgeable and marked volatile (including
+                  purgeable empty) or by using madvise(2) with MADV_FREE.
+                  Reclaimable memory can be taken away from a process at any
+                  time in response to system memory pressure.
+
+     (Wired)      Dirty memory that must stay at a fixed location in physical
+                  RAM.  For example, when a process uses the GPU, the driver
+                  places graphics textures into memory and then shares that
+                  memory with the GPU.  The GPU needs to be able to
+                  independently read from this memory without synchronizing
+                  with the VM subsystem running on the CPU.
+
+     Regions      The count of VM regions contributing to this entry.  For
+                  display purposes, each binary segment in the shared cache
+                  region is considered a separate region.
+
+     Category     A descriptive name for this entry, such as a human-readable
+                  name for a VM_MEMORY_* tag, a path to a mapped file, or a
+                  segment of a loaded binary.
+
+INVESTIGATING MEMORY FOOTPRINT
+     footprint provides an efficient calculation of a process's memory impact
+     and a high-level overview of the various categories of memory
+     contributing to that footprint.  The details that it provides can be used
+     as a starting point in an investigation.
+
+     Prioritize reducing dirty memory.  Dirty memory cannot be automatically
+     reclaimed by the kernel and an accounting of it (described below) is
+     directly used by various parts of the OS as a measure of a process's
+     contribution to system memory pressure.
+
+     Next focus on reducing Reclaimable memory, especially purgeable memory
+     marked volatile which will become dirty when marked non-volatile.
+     Although this memory can be cheaply reclaimed by the kernel, purgeable
+     memory marked volatile is commonly used as a cache of data that may be
+     expensive for a user process to recreate: for example, decoded image
+     data.
+
+     Clean memory can also be cheaply reclaimed by the kernel, but unlike
+     reclaimable memory, it can generally be restored automatically.  For
+     example, file-backed memory, even if dirty, can be automatically evicted
+     from memory and re-read from disk on demand.  Having too much clean
+     memory can still be a performance problem, since large working sets can
+     cause thrashing when a process accesses large amounts of clean memory
+     when there is not enough physical memory readily available to store it.
+
+     Avoid using Wired memory as much as possible: it cannot be paged out,
+     compressed, or otherwise reclaimed.
+
+   Memory Categories
+     malloc(3) memory
+     Memory allocated by malloc(3) is one of the most common forms of memory,
+     making up what is usually referred to as the "heap".  This memory will
+     have a category prefixed with ‘MALLOC_’.  malloc(3) allocates VM regions
+     on a process's behalf; the contents of those regions will be the
+     individual allocations representing objects and data in a process.  Refer
+     to the heap(1) tool to further categorize the objects contained within a
+     malloc memory region, or leaks(1) to detect a subset of heap memory that
+     is no longer reachable.
+
+     Binary segments
+     Loaded binaries will be visible as an entry with both the segment type
+     and the path to the binary, most often __TEXT, __DATA, or __LINKEDIT
+     segments.  Non-shared cache binaries and pages in the __DATA segment
+     (such as those that contain modified global variables) can often have
+     dirty memory.
+
+     Mapped files
+     File-backed memory allocated using mmap(2) will show up as ‘mapped file’
+     along with the path to the file.
+
+     VM allocations
+     Most other types of memory can be tagged with a name that indicates what
+     subsystem allocated the region (see mmap(2) for more information).  For
+     instance, Foundation.framework may allocate memory and tag it with
+     VM_MEMORY_FOUNDATION, which appears in footprint's output as
+     ‘Foundation’.  Processes are able to allocate memory with their own tags
+     by using an appropriate tag in the range VM_MEMORY_APPLICATION_SPECIFIC_1
+     - VM_MEMORY_APPLICATION_SPECIFIC_16.  Memory which does not fall into one
+     of the previous categories and has not been explicitly tagged will be
+     marked ‘untagged (VM_ALLOCATE)’.
+
+     For malloc and VM allocated memory, details about when and where the
+     memory was allocated can often be obtained by enabling MallocStackLogging
+     and using malloc_history(1) to view the backtrace at the time of each
+     allocation.  Xcode.app and Instruments.app also provide visual tools for
+     debugging memory, such as the Xcode's Memory Graph Debugger.
+
+     vmmap(1) provides a similar view to footprint, but with an emphasis on
+     displaying the raw metrics returned by the kernel rather than the
+     simplified and more processed view of footprint.  One important
+     difference is that vmmap(1)'s "DIRTY" column does not include the
+     compressed or swapped memory found in the "SWAPPED" column.
+     Additionally, vmmap(1) can only operate on a single process and contains
+     additional information such as a malloc zone summary.
+
+MEMORY ACCOUNTING
+     Determining what dirty memory should and should not be accounted to a
+     process is a difficult problem.  Memory can be shared amongst processes.
+     It is sometimes allocated by one process on behalf of another.  No matter
+     how the accounting is done, accuracy is often expensive.
+
+     Many operating systems have historically exposed memory metrics such as
+     virtual size (VSIZE) and resident size (RSIZE/RPRVT/RSS/etc.).  These
+     metrics are useful but not great indicators of the amount of physical
+     memory (RAM) required by a process.  For instance, virtual size includes
+     allocations that may not require any physical memory at all, and resident
+     size includes clean and volatile purgeable memory that can be reclaimed
+     by the kernel (see INVESTIGATING MEMORY FOOTPRINT).
+
+     It can be more accurate to measure the dirty memory associated with the
+     VM objects mapped into a process.  This is the approach taken by
+     --vmObjectDirty, but it is expensive and cannot be done in real time.
+
+   Physical Footprint
+     To estimate how much RAM is used by each process at any given moment,
+     Apple platforms track "physical footprint" using a per-process kernel
+     ledger.  The kernel updates this value as dirty pages are faulted into
+     and removed from process address spaces.  This ledger is cheap to query,
+     suitably accurate, and provides features which help implement system
+     memory policies.  It tracks peak memory, triggers actions when a process
+     exceeds a memory limit, and can charge a process for memory that is not
+     mapped into it.  Most other diagnostic tools, such as the ‘MEM’ column in
+     top(1), the ‘Memory’ column in Activity Monitor.app, and the Memory Debug
+     Gauge in Xcode.app all report values from the process footprint ledger.
+
+     footprint's default output strives to provide an accurate breakdown of
+     dirty memory which matches the value reported by the ledger.  The ledger
+     value itself is also reported as phys_footprint under "Auxiliary data"
+     for each process.
+
+     The definition of the footprint ledger is complicated and subject to
+     change.  It includes values from multiple sub-ledgers, such as network
+     memory, graphics memory, etc.  When a memory allocation is recorded in
+     one of these sub-ledgers, footprint will append its name to the Category
+     column.  For example, ‘IOKit (graphics)’ or ‘Owned physical footprint
+     (unmapped) (media)’.
+
+   Owned Unmapped Memory
+     When a portion of assigned footprint is not mapped into a process's
+     address space, footprint will only be able to report the memory as ‘Owned
+     physical footprint (unmapped)’.  If this memory is mapped into another
+     process, the --unmapped argument can be used to search all processes for
+     a mapping of the same VM object(s).  Investigating these other processes
+     and their mappings will often provide more information about the memory.
+     Because --all reports memory shared amongst all processes, it implicitly
+     performs the same function.  Any memory still listed as ‘(unmapped)’
+     after using --unmapped (or --all) is unlikely to be mapped into any
+     process and is likely to be only referenced by the kernel or drivers.
+
+   nofootprint Memory
+     Sometimes, memory dirtied on behalf of a process is deliberately excluded
+     from its footprint.  One reason this happens is that some system
+     component, perhaps a hardware driver, needs to allocate memory on behalf
+     of a process, but the process doesn't directly control the size of the
+     allocation.  This policy prevents processes from hitting their memory
+     limits due to factors beyond their control.  This memory is still dirty
+     and can be identified by ‘(nofootprint)’ in the category name.
+
+   kernel_task Memory
+     footprint approximates kernel_task memory by reporting system wired
+     memory broken down by wired VM tag and kernel zone.  This is the same
+     information provided by zprint(1).
+
+     If footprint is reporting on a user space process and kernel_task at the
+     same time, the reported Summary value will correctly count any wired
+     memory only once, rather than twice for the process and as part of the
+     wired memory breakdown associated with kernel_task.
+
+     One limitation of this approach is that footprint does not report unwired
+     memory private to kernel_task.  This means that the Summary TOTAL
+     reported with footprint --all may not represent the true total system
+     dirty memory.  The "System auxiliary data" described below is a better
+     measure of total system footprint.
+
+AUXILIARY DATA
+     footprint reports the following "Auxiliary data" for processes:
+
+         phys_footprint - the current value of the kernel ledger tracking the
+         amount of dirty memory owned by a process
+
+         phys_footprint_peak - the maximum value of phys_footprint since
+         process launch
+
+     ‘footprint -a’ reports the following "System auxiliary data"
+
+         boot_carveout - memory allocated prior to kernel startup
+
+         sys_wired - total system wired memory
+
+         sys_unwired - total dirty unwired memory
+
+         sys_footprint - total of the above
+
+SEE ALSO
+     vmmap(1), heap(1), leaks(1), malloc_history(1), vm_stat(1), zprint(1)
+
+ macOS 27.0                   November 10, 2025                  FOOTPRINT(1)

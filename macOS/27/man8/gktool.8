@@ -1,0 +1,34 @@
+GKTOOL(8)                   System Manager's Manual                  GKTOOL(8)
+
+NAME
+     gktool – utility for assessing Gatekeeper policy on applications
+
+SYNOPSIS
+     gktool scan path
+     gktool help scan
+
+
+
+DESCRIPTION
+     gktool is used assessing Gatekeeper policy on applications. This is
+     useful for pre-warming the cache so users do not see the 'Verifying...'
+     dialog on first launch of an application.
+
+
+     gktool requires exactly one subcommand option to determine what action is
+     to be performed.
+
+
+SUBCOMMANDS
+     The subcommands are as follows:
+
+     scan    Performs a Gatekeeper scan of the specified path.
+
+
+     help    Print help for the particular subcommand.
+
+
+SEE ALSO
+     codesign(1), spctl(8), stapler(1), syspolicy_check(1)
+
+ macOS 27.0                   April 19th, 2023                      GKTOOL(8)

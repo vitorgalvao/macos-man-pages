@@ -1,0 +1,35 @@
+PLATFORMSSOUIAGENT(8)       System Manager's Manual      PLATFORMSSOUIAGENT(8)
+
+NAME
+     PlatformSSOUIAgent – Platform SSO User Interface Agent
+
+DESCRIPTION
+     PlatformSSOUIAgent is a system agent that provides user interface
+     components for Platform SSO authentication. It manages authentication
+     dialogs and credential collection for multiple authentication methods,
+     operating in both standard user mode (as an agent) and system contexts.
+
+     The agent operates in two modes: normal mode for standard user sessions,
+     and login mode for FileVault unlock, OS installation, or migration
+     scenarios. Login mode is activated automatically based on boot mode
+     detection or by using the -l flag.
+
+     The PlatformSSOUIAgent command should not be run directly.
+
+OPTIONS
+     -l      Force the agent to run in login mode.
+
+FILES
+     /System/Library/PrivateFrameworks/PlatformSSO.framework/Support/PlatformSSOUIAgent
+             The agent executable
+
+     /System/Library/LaunchAgents/com.apple.PlatformSSO.PlatformSSOUIAgent.plist
+             Launch agent user session configuration
+
+     /System/Library/LaunchAgents/com.apple.PlatformSSO.PlatformSSOUIAgent.login.plist
+             Launch agent system session configuration
+
+SEE ALSO
+     launchd(8), log(1)
+
+ macOS 27.0                   October 20, 2025          PLATFORMSSOUIAGENT(8)

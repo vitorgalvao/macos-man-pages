@@ -1,0 +1,234 @@
+METALPERFTRACE(1)           General Commands Manual          METALPERFTRACE(1)
+
+NAME
+     metalperftrace – collect and inspect Metal GPU performance data
+
+SYNOPSIS
+     metalperftrace subcommand [options]
+
+     metalperftrace collect [--last duration | --start date --end date]
+                    [--prefix prefix] [--json] output_dir
+
+     metalperftrace overview [--json] [--json-include-timeline]
+                    [--include-state-transitions] [--predicate expr]
+                    [--aggregate] [--start offset] [--end offset]
+                    [--domain domain] [--state-label label] trace_file
+
+     metalperftrace listen [--json] [--interval sec] [--output file]
+                    [--process name] [--pid pid] [--predicate expr]
+
+     metalperftrace setup --enable feature | --disable feature [--pid pid]
+
+DESCRIPTION
+     metalperftrace collects and inspects always-on recorded Metal graphics
+     performance data.  The system continuously records frame timing and
+     related statistics for all Metal layers.  This tool retrieves that data
+     and either stores it into a trace file that can be opened by tools such
+     as Instruments, or streams it live as human-readable text or JSON.
+
+     The following subcommands are available:
+
+     collect   Retrieve always-on recorded Metal performance metrics for a
+               given time range and write them as .atrc files into output_dir
+               (created if it does not exist).  Re-running the same command
+               with the same directory skips files that were already
+               collected.
+
+     overview  Print a performance summary from a previously collected .atrc
+               trace file.  By default, prints an aggregation over the entire
+               trace duration.
+
+     listen    Stream live Metal performance statistics as data arrives from
+               the system, refreshing on a configurable interval.
+
+     setup     Dynamically enable or disable a Metal performance trace feature
+               in a running Metal process.
+
+SUBCOMMAND: COLLECT
+   Synopsis
+     metalperftrace collect [--last duration | --start date --end date]
+     [--prefix prefix] [--json] output_dir
+
+   Options
+     --last duration
+                  Collect trace data from the last duration.  The suffix
+                  determines the unit: ‘s’ (seconds, default), ‘m’ (minutes),
+                  ‘h’ (hours), ‘d’ (days).  A bare number without a suffix is
+                  treated as seconds.  Examples: 30s, 5m, 2h, 1d.  Mutually
+                  exclusive with --start.
+
+     --start date
+                  Start of the collection window (absolute date).  Accepted
+                  formats: yyyy-MM-dd, yyyy-MM-ddTHH:mm:ss,
+                  yyyy-MM-ddTHH:mm:ssZ, @unix_timestamp.  Dates in the future
+                  are not allowed.
+
+     --end date   End of the collection window.  Same format as --start.
+                  Defaults to the current time when omitted.
+
+     --prefix prefix
+                  File name prefix for the collected trace files.  Defaults to
+                  MetalPerfTrace.
+
+     --json       Output collected file paths as a JSON dictionary with a
+                  traces key.  Enabled by default when stdout is not a
+                  terminal.
+
+SUBCOMMAND: OVERVIEW
+   Synopsis
+     metalperftrace overview [--json] [--json-include-timeline]
+     [--include-state-transitions] [--predicate expr] [--aggregate] [--start
+     offset] [--end offset] [--domain domain] [--state-label label] trace_file
+
+   Description
+     Print per-process, per-layer performance metrics from a collected trace.
+     By default, prints an aggregation over the entire trace duration with
+     full detail for all metric sections.
+
+   Options
+     --json                      Emit output as a JSON object instead of
+                                 human-readable text.  Contains aggregated
+                                 summary statistics for each layer session.
+
+     --json-include-timeline     Include the full per-frame timeline data in
+                                 JSON output.  Implies --json.
+
+     --include-state-transitions
+                                 Show detailed StateReporter state transition
+                                 history, including labels, time ranges, and
+                                 stable state values for each domain.
+
+     --predicate expr            An NSPredicate expression used to filter the
+                                 layers shown.  The expression is evaluated
+                                 against a dictionary with keys: processName
+                                 (string), pid (integer), layerName (string).
+
+     --aggregate                 Enable aggregation mode.  Groups metrics by
+                                 state transitions.  Without additional
+                                 options, aggregates over all {domain, label,
+                                 stableState} keys across all domains.
+
+     --start offset              Start offset from trace start (used with
+                                 --aggregate).  Duration format, e.g. 5s, 2m,
+                                 1h.
+
+     --end offset                End offset from trace start (used with
+                                 --aggregate).  Defaults to trace end when
+                                 omitted.
+
+     --domain domain             Restrict aggregation to a single state domain
+                                 (used with --aggregate).
+
+     --state-label label         With --domain, group by {domain, label} only,
+                                 ignoring stableState differences.  Requires
+                                 --domain.
+
+SUBCOMMAND: LISTEN
+   Synopsis
+     metalperftrace listen [--json] [--interval sec] [--output file]
+     [--process name] [--pid pid] [--predicate expr]
+
+   Description
+     Stream live Metal performance statistics as data arrives from the system.
+     Always prints full detail for all metric sections.
+
+   Options
+     --json         Emit each update as a compact JSON object on a single line
+                    (NDJSON).  When the session ends (via SIGINT, SIGTERM, or
+                    SIGHUP), the output file, if any, is rewritten as a single
+                    pretty-printed JSON array.
+
+     --interval sec, -i sec
+                    Update interval in seconds.  Minimum: 1.0.  Default: 1.0.
+
+     --output file, -o file
+                    Tee all output to file in addition to the terminal.  The
+                    file must not already exist.
+
+     --process name, -p name
+                    Restrict output to the named process.  May be repeated.
+
+     --pid pid      Restrict output to the given process ID.  May be repeated.
+
+     --predicate expr
+                    Same as for the overview subcommand.
+
+SUBCOMMAND: SETUP
+   Synopsis
+     metalperftrace setup --enable feature | --disable feature [--pid pid]
+
+   Description
+     Enable or disable a Metal performance trace feature in one or more
+     running Metal processes.  At least one --pid option is required.  Exactly
+     one of --enable or --disable must be specified.
+
+   Features
+     per-frame-metrics        Per-frame signpost collection (per-drawable
+                              signposting).  Equivalent to setting
+                              METAL_PERFORMANCE_PER_FRAME_SIGNPOSTS=1 at
+                              launch.
+
+     shader-compiler-metrics  Shader compiler statistics signpost collection.
+                              Equivalent to setting
+                              METAL_PERFORMANCE_SHADER_COMPILER_STATS_SIGNPOSTS=1
+                              at launch.
+
+     hud                      Metal performance HUD overlay.
+
+   Options
+     --enable feature
+               Enable the named feature.
+
+     --disable feature
+               Disable the named feature.
+
+     --pid pid
+               Target the process with the given PID.  May be repeated.
+
+EXIT STATUS
+     The metalperftrace utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     Collect the last 30 minutes of trace data:
+
+           metalperftrace collect --last 30m /tmp/traces
+
+     Print a text overview from a collected trace:
+
+           metalperftrace overview /tmp/traces/trace.atrc
+
+     Export a JSON summary:
+
+           metalperftrace overview --json /tmp/traces/trace.atrc
+
+     Export JSON with full per-frame timeline:
+
+           metalperftrace overview --json-include-timeline
+           /tmp/traces/trace.atrc
+
+     Aggregate metrics by state domain:
+
+           metalperftrace overview --aggregate --domain com.example.App
+           /tmp/traces/trace.atrc
+
+     Aggregate for a specific time window:
+
+           metalperftrace overview --aggregate --start 5m --end 10m
+           /tmp/traces/trace.atrc
+
+     Stream live stats filtered to one process:
+
+           metalperftrace listen --process MyGame --interval 2
+
+     Stream live stats in JSON mode with file logging:
+
+           metalperftrace listen --json --output /tmp/session.json
+
+     Enable per-frame metrics in a running process:
+
+           metalperftrace setup --enable per-frame-metrics --pid 1234
+
+SEE ALSO
+     trace(1), xctrace(1)
+
+ macOS 27.0                      May 7, 2026                METALPERFTRACE(1)

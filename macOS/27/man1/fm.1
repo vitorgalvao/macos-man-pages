@@ -1,0 +1,173 @@
+FM(1)                       General Commands Manual                      FM(1)
+
+NAME
+     fm – command-line interface for Apple Foundation Models
+
+SYNOPSIS
+     fm [-h] command [options]
+
+DESCRIPTION
+     fm is a command-line interface for Apple Foundation Models. It generates
+     responses from Apple's on-device language model, counts tokens, generates
+     JSON generation schemas, checks model availability, and hosts a Chat
+     Completions API server.
+
+     Run 'fm <command> --help' for detailed help on an individual command.
+
+COMMANDS
+     respond
+             Generate a response to a prompt.
+
+     chat    Start an interactive chat session.
+
+     count-tokens
+             Count the tokens in a prompt, instructions, or transcript.
+
+     schema  Generate a JSON generation schema.
+
+     serve   Start a Chat Completions API server for Foundation Models.
+
+     available
+             Check model availability.
+
+     license
+             Show and agree to the Legal Notice & Terms.
+
+MODELS
+     system  On-device Apple Foundation Model (default).
+
+GLOBAL OPTIONS
+     -m, --model <model>
+             Model to use: system (default).
+
+     -h, --help
+             Show help information.
+
+RESPOND OPTIONS
+     -i, --instructions <text>
+             Instructions for the model to follow.
+
+     --schema <file>
+             Path to a JSON schema file, or an inline JSON schema string.
+
+     --text <text>
+             Text segment to include in the prompt.
+
+     --image <path>
+             Path to an image to include in the prompt.
+
+     --resume <file>
+             Continue an earlier conversation by loading a saved transcript,
+             so the model picks up with its previous turns as context.
+
+     --save-transcript <file>
+             Save the session transcript to a file after responding. An
+             absolute path is used as-is; a bare filename is saved in the
+             current directory.
+
+     --[no-]stream
+             Stream the output as it is generated (default: on).
+
+     -g, --greedy
+             Use greedy sampling.
+
+     -v, --verbose
+             Print verbose output.
+
+     --use-case <case>
+             System model use case: general or content-tagging.
+
+     --guardrails <level>
+             System model guardrail level: default or
+             permissive-content-transformations.
+
+CHAT OPTIONS
+     -r, --resume <session>
+             Resume a saved chat session.
+
+     --continue
+             Continue the most recent chat session.
+
+     -i, --instructions <text>
+             Instructions for the model.
+
+     --set-default-model <model>
+             Persist <model> as the default for future fm chat sessions.
+
+COUNT-TOKENS OPTIONS
+     --transcript <file>
+             Path to a saved transcript to count. Its turns are counted as a
+             framed conversation. A bare prompt is counted as raw content
+             instead.
+
+     -q, --quiet
+             Print only the integer count (automatic when stdout is piped or
+             redirected).
+
+SERVE OPTIONS
+     --host <address>
+             Host address to bind to (TCP mode).
+
+     --port <port>
+             Port to listen on, 1-65535 (TCP mode).
+
+     --socket <path>
+             Unix domain socket path (socket mode).
+
+SCHEMA
+     fm schema object generates a JSON generation schema for an object type.
+     Each --string, --integer, --double, or --boolean starts a new property;
+     follow it with --description, --optional, and/or --array to annotate it.
+     Use dot notation (a.b) in property names to nest objects.
+
+     fm schema object --help documents the full property-declaration syntax.
+
+LICENSE
+     The first time you run fm you must agree to the Apple Foundation Models
+     CLI Legal Notice & Terms. fm displays them and asks whether you agree;
+     answer 'yes' or 'y' to agree. Any other response disagrees and fm exits
+     with status 69 without running the command.
+
+     fm license is the one command that is never gated, since it is how you
+     review the terms and agree to them.
+
+     Agreeing applies to every user on the machine, so it must be run as a
+     privileged user: run 'sudo fm license'.
+
+     Run 'sudo fm license' to review and agree, 'fm license --show' to print
+     the terms without being prompted, and 'fm license --status' to report
+     whether the machine has agreed.
+
+FILES
+     ~/.fm/sessions/
+             Saved chat sessions and transcripts.
+
+     ~/.fm/config.json
+             Per-user settings, including the default model.
+
+EXAMPLES
+     Generate a response with the on-device model:
+
+           fm respond 'What is Swift?'
+
+     Stream a response as it is generated:
+
+           fm respond --stream 'Summarize this article'
+
+     Start an interactive chat with custom instructions:
+
+           fm chat --instructions 'You are a coding assistant'
+
+     Count the tokens in a prompt:
+
+           fm count-tokens 'Hello world'
+
+     Generate a JSON schema for an object type:
+
+           fm schema object --name Person --string name --int age
+
+SEE ALSO
+     Foundation Models framework documentation:
+     https://developer.apple.com/documentation/foundationmodels
+
+Darwin                           June 8, 2026                            FM(1)

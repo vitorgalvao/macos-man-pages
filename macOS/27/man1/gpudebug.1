@@ -1,0 +1,429 @@
+gpudebug(1)                 General Commands Manual                gpudebug(1)
+
+NAME
+     gpudebug - interactive GPU trace debugger
+
+SYNOPSIS
+      gpudebug -t <path> [-o <dir>] [-d <device>] [-q] [--timeout <sec>] [-h]
+      gpudebug -s <id> [-c <command>]...
+      gpudebug -l | --list-sessions
+      gpudebug --list-devices
+      gpudebug --terminate <id|all>
+      gpudebug --oneshot -t <path> [-c <command>]...
+
+DESCRIPTION
+     gpudebug is an interactive CLI debugger for Metal GPU traces. It opens a
+     .gputrace file and provides a REPL for navigating the captured API call
+     hierarchy, inspecting resources and pipeline state, fetching textures and
+     buffers to disk, browsing shader source code, and analyzing GPU
+     performance.
+
+     gpudebug runs as a client/server pair. When you open a trace, a backend
+     session is created that persists independently of the REPL. You can
+     disconnect with exit and reconnect later with -s <id>, or send individual
+     commands with -c without entering the REPL. Use exit --terminate to end
+     the session.
+
+     A .gputrace file is produced by gpucapture(1) or Xcode's Metal Debugger.
+     It contains a recorded sequence of Metal API calls along with all
+     associated resources (buffers, textures, pipeline states, shader
+     libraries) needed to replay the captured GPU workloads.
+
+     On startup, gpudebug loads the trace index for immediate browsing. A
+     background replayer connects to the local GPU and begins preparing
+     resources. Static browsing (navigation, listing, info) is available
+     immediately; fetch requires the replayer to be ready (check with status).
+
+OPTIONS
+     -t, --gputrace <path>
+            Path to a .gputrace file or bundle directory. Required unless
+            using -s, -l, or --terminate.
+
+     -o, --output <dir>
+            Output directory for resources saved by the fetch command. If not
+            specified, defaults to $TMPDIR/gpudebug_out/<trace_name>/ where
+            <trace_name> is the trace filename without the .gputrace
+            extension. Created automatically if it does not exist.
+
+     -d, --device <device>
+            Target device for replay. Accepts a product name, marketing name,
+            or numeric ID from --list-devices — matching is case-insensitive
+            substring. If the match is ambiguous, all candidates are printed.
+            If no match is found, the full device table is shown. By default
+            the local device is used.
+
+     --list-devices
+            List all replay-capable devices on the network and exit. Does not
+            require a trace file. The local machine is always listed first.
+            Each device shows an ID, name, model, OS version, and UDID.
+
+     -s, --session <id>
+            Connect to an existing debug session by its ID (shown in -l output
+            and printed when a session is created). Use with -c to send
+            commands without entering the REPL.
+
+     -c <command>
+            Execute a command and exit. Can be repeated to chain multiple
+            commands: -c "go cb0" -c "info". Requires either -t (creates a new
+            session) or -s (connects to an existing one). Sessions persist
+            after commands finish, allowing fast reuse with -s. Use
+            --terminate when done.
+
+     -l, --list-sessions
+            List all active debug sessions and exit. Shows session ID, trace
+            name, device, replayer state, and lifetime status.
+
+     --terminate <id|all>
+            Terminate a debug session by its ID, or use all to terminate every
+            active session.
+
+     --timeout <seconds>
+            Set the idle timeout for the session in seconds. After this period
+            with no commands, the session terminates automatically. Default is
+            7200 (2 hours). Use --timeout 0 to disable the timeout.
+
+     --oneshot
+            Run as a one-shot operation: create a session, execute commands
+            (via -c or pipe), then terminate the session automatically. Forces
+            pipe-mode semantics (blocking fetch, no interactive prompt)
+            regardless of whether stdin is a terminal. Note: each invocation
+            loads the trace and spawns a replayer from scratch, which can take
+            seconds to minutes for large traces. For repeated operations
+            against the same trace, create a session once with -t and reuse it
+            with -s.
+
+     -q, --quiet
+            Suppress the startup banner. Useful for scripting and piped input.
+
+     --json
+            Output in JSON format. Affects all commands that produce
+            structured output. Useful for machine consumption and AI agent
+            integration.
+
+     --version
+            Print the version and exit.
+
+     -h, --help
+            Print usage summary and exit.
+
+TRACE HIERARCHY
+     A trace is a tree. The root has four children:
+
+            root
+            ├ commands                command buffers
+            │  ├ cb0, cb1, ...
+            │  │  ├ grpN              debug group (can nest at any level)
+            │  │  ├ reN               render encoder
+            │  │  │  ├ color0..N      color attachments
+            │  │  │  ├ depth          depth attachment
+            │  │  │  ├ stencil        stencil attachment
+            │  │  │  ├ drawN          draw call
+            │  │  │  │  ├ pipeline     render pipeline state
+            │  │  │  │  ├ vertex       vertex-stage bindings
+            │  │  │  │  │  ├ buf[0..N]  bound buffers
+            │  │  │  │  │  ├ tex[0..N]  bound textures
+            │  │  │  │  │  └ sources    shader source files
+            │  │  │  │  ├ fragment     fragment-stage bindings
+            │  │  │  │  ├ color0..N    per-draw attachments
+            │  │  │  │  └ indexBuffer  index buffer (if indexed draw)
+            │  │  ├ ceN               compute encoder
+            │  │  │  └ dispN          dispatch call
+            │  │  └ beN               blit encoder
+            │  │     └ blitN          blit operation
+            ├ performance             GPU profiling data (requires profile load)
+            │  ├ timeline           GPU execution timeline
+            │  │  ├ encoders        per-encoder timeline
+            │  │  ├ shaders         per-shader timeline
+            │  │  └ counters        GPU counter time-series
+            │  ├ encoders           encoder cost ranking
+            │  ├ commands           draw/dispatch cost ranking
+            │  └ shaders            shader cost ranking
+            ├ api_calls               flat list of all Metal API calls
+            └ resources               resource catalog
+               ├ buffers                   bufN
+               ├ command_queues            cqN
+               ├ compute_pipelines         cpsN
+               ├ depth_stencil             dssN
+               ├ libraries                 libN (entry points + source files)
+               ├ render_pipelines          rpsN
+               ├ samplers                  samN
+               └ textures                  texN
+
+     Every node in the tree has a short name (its URL segment) and lists
+     available actions when shown by list. The actions tell you what commands
+     work on that node: go (navigable), info (inspectable), fetch
+     (downloadable).
+
+     Debug groups (grpN) can appear at any level: inside command buffers,
+     inside other groups, or inside encoders.
+
+CROSS-TREE LINKS
+     Some nodes are connected across different parts of the tree. When you
+     navigate to such a node, its links are shown below the child list:
+
+     Links:
+       :a   /api_calls/api277
+       :pt  /performance/timeline/shaders/frag1
+
+     Link shortcuts can be used with the go command (e.g. go :a). Available
+     link types:
+
+            Shortcut  Meaning
+            --------  -------
+            :d        debug tree node (command, draw, dispatch)
+            :a        api_calls entry
+            :ps       profile shader (cost-ranked)
+            :pt       profile timeline entry
+            :pe       profile encoder
+            :pc       profile command
+            :l        library entry point
+
+     Links are bidirectional. Navigating from a draw call via :a reaches the
+     API call, which has a :d link back. Library entry points link to profile
+     shaders (:ps) and timeline entries (:pt) when profiling data is loaded.
+
+NODE NAMING
+     Node names are stable identifiers formed from a type prefix and a zero-
+     based index:
+
+            Type                   Prefix   Example
+            ----                   ------   -------
+            Command buffer         cb       cb0
+            Debug group            grp      grp0
+            Render encoder         re       re0
+            Compute encoder        ce       ce0
+            Blit encoder           be       be0
+            Draw call              draw     draw0
+            Dispatch call          disp     disp0
+            Blit operation         blit     blit0
+            Buffer (resource)      buf      buf0
+            Texture (resource)     tex      tex0
+            Library                lib      lib0
+            Heap                   heap     heap0
+            Render pipeline        rps      rps0
+            Compute pipeline       cps      cps0
+            Depth/stencil state    dss      dss0
+            Event                  evt      evt0
+            Command queue          cq       cq0
+            Sampler                sam      sam0
+
+     Inside shader-stage bindings (vertex, fragment, compute), bound resources
+     use bracket notation with the Metal bind index: buf[0], tex[3], sam[0].
+     Inline data from setBytes: calls appears as buf[N] with an "(inline)"
+     summary and is fetchable.
+
+COMMANDS
+     Type <command> ? for built-in help on any command (e.g. list ?, go ?).
+
+     list
+            Show children of the current node.
+
+            list              show first 20 items
+            list N-M          show items N through M (e.g. list 20-40)
+            list --all        show all items
+
+            Each row shows the node name, typed value columns, and available
+            actions.
+
+     go
+            Navigate to a node. After navigating, go automatically lists the
+            children of the destination.
+
+            go <name>         navigate to a child (e.g. go cb0)
+            go <url>          navigate to a path (e.g. go cb0/re0/draw3)
+            go @<resource>    navigate to a resource (e.g. go @tex0)
+            go :shortcut      follow a cross-tree link (e.g. go :a)
+            go ..             navigate to parent
+            go /              navigate to root
+            go -              go back to previous location
+
+     info
+            Show detailed properties of a node.
+
+            info              show details of the current node
+            info <name>       show details of a child (without navigating)
+            info @<resource>  show details of a resource (e.g. info @rps1)
+            info --all        show all properties (default: curated summary)
+
+            On a draw/dispatch call, shows the API selector with arguments and
+            the encoder state at that point (cull mode, winding, depth bias,
+            stencil refs, depth-stencil state). On an attachment, shows
+            load/store actions and resource properties. On a pipeline, shows
+            entry points, color attachments, depth/stencil, vertex layout, and
+            rasterization. On a library entry point, shows shader stage,
+            parent library, and referencing pipelines.
+
+     fetch
+            Download a resource to the output directory (-o). Requires the
+            replayer to be ready.
+
+            fetch                     fetch the current node
+            fetch <name>              fetch a child by name
+            fetch @<resource>         fetch a resource (e.g. fetch @tex0)
+            fetch <name> --out <path> save to explicit path
+
+            Textures are saved as .png, buffers as .bin, shader sources as
+            their original filename. Inline bytes from setBytes: calls are
+            also fetchable as .bin. Heatmap cost types under
+            performance/commands are fetchable as PNG. Counter time-series
+            under performance/timeline/counters are fetchable as JSON.
+
+     find
+            Search labels, names, and summaries across the entire trace.
+
+            find <text>       case-insensitive substring match
+
+            Results are shown as absolute URL paths, navigable with go.
+
+     next / prev
+            Move to the next or previous sibling at the current level.
+
+     profile
+            Manage GPU profiling sessions.
+
+            profile                show profile status
+            profile list           list embedded profiling sessions in the trace
+            profile load [N]       load session N (default: latest)
+            profile run [options]  collect profiling data from device (M3/A17+ required)
+            profile embed          embed session into trace
+
+            Run options: --gpu-state default|low|medium|high, --exec
+            overlapping|serial, --embed. After loading, the performance
+            subtree is populated with cost breakdowns, timelines, counters,
+            and heatmaps.
+
+     wait
+            Reattach to a backgrounded async operation.
+
+            wait              list active operations
+            wait <opN>        wait for a specific operation to complete
+
+            Long operations (profile load, trace loading) show a spinner.
+            Press Ctrl+B to send the operation to the background and continue
+            using the REPL. Use wait to reattach when ready.
+
+     status
+            Show current session state: trace file, device, replayer
+            readiness, active operations, and session lifetime.
+
+     help
+            Show a summary of all commands. For per-command help, use
+            <command> ?.
+
+     exit
+            exit (or quit, q) disconnects from the session but keeps it alive.
+            Reconnect with gpudebug -s <id>. Use exit -t or exit --terminate
+            to end the session and free all resources.
+
+RESOURCE REFERENCES
+     Resources are identified by @-prefixed short names throughout gpudebug:
+     @buf4, @tex12, @rps0. These references appear in info output, API call
+     summaries, and encoder state. They can be used with go, info, and fetch
+     to access the resource directly from anywhere in the tree.
+
+SCRIPTING
+     Trace loading and replayer startup can take seconds to minutes. For any
+     investigation beyond a single command, create a session once and reuse
+     it:
+
+     gpudebug -t trace.gputrace -c "list"    # creates session 268
+     gpudebug -s 268 -c "go commands/cb0/re0/draw0" -c "fetch color0"
+     gpudebug -s 268 -c "next" -c "fetch color0"
+     gpudebug --terminate 268                # done
+
+     Each -s invocation reuses the loaded trace and replayer instantly.
+
+     Pipe mode reads commands from standard input:
+
+     echo -e "go commands/cb0/re0/draw0\nfetch color0\nexit" | gpudebug -q -t trace.gputrace
+
+     Oneshot mode (--oneshot) creates and terminates a session in one
+     invocation:
+
+     gpudebug --oneshot -t trace.gputrace -c "go commands/cb0/re0/draw0" -c "info pipeline"
+
+REPLAYER
+     The replayer loads in the background and prepares resources for fetch.
+     Check readiness with status.
+
+     • TTY mode: the REPL is usable immediately. A notification prints when
+       the replayer is ready.
+
+     • Pipe mode: fetch blocks until the replayer is ready.
+
+     If the replay device is incompatible, status shows specific reasons.
+     Navigation, listing, and info remain functional; only fetch is affected.
+
+SESSIONS
+     Sessions are persistent backend processes. They survive disconnection and
+     retain navigation position and replayer state. Reconnect with gpudebug -s
+     <id>.
+
+     Sessions are tied to the terminal's session leader (typically your
+     shell). They terminate when that process exits or after an idle timeout
+     (default 2 hours). Use gpudebug -l to list sessions and gpudebug
+     --terminate <id> to end them.
+
+EXAMPLES
+      Open a trace and browse.
+            $ gpudebug -t Scene.gputrace
+            gpudebug> go commands/cb0/re0
+            gpudebug commands/cb0/re0> info draw0
+            gpudebug commands/cb0/re0> fetch depth
+
+      Browse API calls with inline argument values.
+            gpudebug> go api_calls
+            gpudebug api_calls> list 0-10
+            gpudebug api_calls> go api15
+            gpudebug api_calls/api15> go :d
+
+      Load profiling data and inspect shader costs.
+            gpudebug> profile load
+            gpudebug> go performance/shaders
+            gpudebug performance/shaders> info frag0
+            gpudebug performance/shaders> go :l
+
+      Fetch a GPU heatmap for a draw call.
+            gpudebug> go performance/commands/draw0/heatmap/fragment
+            gpudebug .../fragment> fetch cost
+
+      Inspect a library's entry points and shader sources.
+            gpudebug> go resources/libraries/lib0
+            gpudebug resources/libraries/lib0> info vertexShader
+            gpudebug resources/libraries/lib0> fetch AAPLShaders.metal
+
+      List devices and replay on a remote device.
+            $ gpudebug --list-devices
+            $ gpudebug -t trace.gputrace -d 0
+
+      Reuse a session for scripted operations.
+            $ gpudebug -t trace.gputrace -c "list"    # session 42
+            $ gpudebug -s 42 -c "go commands/cb0/re0/draw0" -c "fetch color0"
+            $ gpudebug -s 42 -c "next" -c "fetch color0"
+            $ gpudebug --terminate 42
+
+TIPS
+     • go automatically lists children after navigating — you rarely need to
+       type list separately.
+
+     • info <name> inspects a child from the parent without navigating. Useful
+       for checking multiple items.
+
+     • go - works like cd - in a shell. Useful after jumping to a resource and
+       wanting to return.
+
+     • Attachments appear both on encoders (final state) and on individual
+       draws (per-draw state). Info on either shows load/store actions.
+
+     • Use profile load to load embedded profiling data from a trace captured
+       with GPU profiling enabled. The performance subtree becomes navigable
+       after loading.
+
+     • In the api_calls list, receivers show as @ref when resolvable (e.g.
+       [@heap5 setPurgeableState:Volatile]) and return values appear in the
+       Result column.
+
+SEE ALSO
+     gpucapture(1)
+
+1.0                                                                gpudebug(1)
