@@ -169,7 +169,9 @@ SECURITY COMMANDS
      locked.
 
      unlock-keychain [-hu] [-p password] [keychain] Unlock keychain, or the
-     default keychain if none is specified.
+     default keychain if none is specified. Unlocking the login keychain might
+     succeed when an incorrect password is presented, if other unlock factors
+     are available.
 
      set-keychain-settings [-hlu] [-t timeout] [keychain] Set settings for
      keychain, or the default keychain if none is specified.

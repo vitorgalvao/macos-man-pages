@@ -233,12 +233,13 @@ DESCRIPTION
              Control an active connection multiplexing master process.  When
              the -O option is specified, the ctl_cmd argument is interpreted
              and passed to the master process.  Valid commands are: “check”
-             (check that the master process is running), “forward” (request
-             forwardings without command execution), “cancel” (cancel
-             forwardings), “proxy” (connect to a running multiplexing master
-             in proxy mode), “exit” (request the master to exit), and “stop”
-             (request the master to stop accepting further multiplexing
-             requests).
+             (check that the master process is running), “conninfo” (report
+             information about the master connection), “channels” (report
+             information about open channels), “forward” (request forwardings
+             without command execution), “cancel” (cancel forwardings),
+             “proxy” (connect to a running multiplexing master in proxy mode),
+             “exit” (request the master to exit), and “stop” (request the
+             master to stop accepting further multiplexing requests).
 
      -o option
              Can be used to give options in the format used in the
@@ -629,6 +630,8 @@ ESCAPE CHARACTERS
              !command allows the user to execute a local command if the
              PermitLocalCommand option is enabled in ssh_config(5).  Basic
              help is available, using the -h option.
+
+     ~I      Show information about the current SSH connection.
 
      ~R      Request rekeying of the connection (only useful if the peer
              supports it).
@@ -1029,4 +1032,4 @@ AUTHORS
      created OpenSSH.  Markus Friedl contributed the support for SSH protocol
      versions 1.5 and 2.0.
 
-macOS 26.5                     December 4, 2024                     macOS 26.5
+macOS 26.6                     December 22, 2025                    macOS 26.6
